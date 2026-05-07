@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Merci — retroplanning.eu</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f9;color:#1a1a2e;
+      display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .box{text-align:center;background:#ffffff;padding:50px 40px;border-radius:16px;
+      border:2px solid #2ecc71;max-width:540px;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
+    h1{color:#2ecc71;font-size:2rem;margin-bottom:12px}
+    p{color:#555;line-height:1.7;margin-bottom:8px}
+    .num{color:#2980b9;font-weight:bold;font-size:1.1rem;margin:16px 0}
+    .btn{display:inline-block;margin:8px 6px;padding:13px 28px;border-radius:10px;
+      text-decoration:none;font-weight:bold;font-size:0.95rem;transition:all .2s}
+    .btn-png{background:linear-gradient(135deg,#2980b9,#1a5f8a);color:#fff}
+    .btn-pdf{background:#fff;color:#2980b9;border:2px solid #2980b9}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(41,128,185,.3)}
+    .back{display:block;margin-top:24px;color:#aaa;font-size:0.85rem;text-decoration:none}
+    .back:hover{color:#555}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>✅ Merci pour votre achat !</h1>
+    <p>Votre rétroplanning <strong>{{ evenement }}</strong> est prêt.</p>
+    <div class="num">Facture N° {{ num_facture }}</div>
+    <p>Téléchargez vos fichiers ci-dessous :</p>
+    <br/>
+    <a href="/download/png" class="btn btn-png">🖼️ Télécharger le rétroplanning (PNG)</a>
+    <a href="/download/pdf" class="btn btn-pdf">🧾 Télécharger la facture (PDF)</a>
+    <a href="/" class="back">← Créer un nouveau rétroplanning</a>
+  </div>
+</body>
+</html>

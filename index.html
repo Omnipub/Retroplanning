@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rétroplanning en ligne — retroplanning.eu</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f9;color:#1a1a2e;min-height:100vh}
+
+    header{background:linear-gradient(135deg,#2980b9,#1a5f8a);padding:30px 20px;text-align:center;border-bottom:3px solid #2980b9}
+    header h1{font-size:2.2rem;color:#ffffff;letter-spacing:3px;text-transform:uppercase}
+    header p{color:#d0e8f5;margin-top:8px;font-size:1rem}
+
+    .container{max-width:900px;margin:40px auto;padding:0 20px 80px}
+
+    .card{background:#ffffff;border-radius:14px;padding:32px;margin-bottom:28px;border:1px solid #dde3ea;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+    .card h2{color:#2980b9;font-size:1.15rem;margin-bottom:20px;border-bottom:1px solid #eef0f3;padding-bottom:10px;display:flex;align-items:center;gap:8px}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+
+    label{display:block;font-size:0.8rem;color:#555;margin-bottom:5px;font-weight:500}
+    input[type=text],input[type=email],input[type=tel],input[type=date],input[type=color],select{
+      width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a4a;
+      background:#f4f6f9;color:#1a1a2e;font-size:0.9rem;transition:border .2s}
+    input:focus,select:focus{outline:none;border-color:#2980b9;background:#fff}
+    input[type=color]{height:42px;padding:4px;cursor:pointer}
+
+    .etape-block{background:#f4f6f9;border-radius:10px;padding:12px;border:1px solid #dde3ea}
+    .etape-num{color:#2980b9;font-weight:bold;font-size:0.75rem;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+
+    .color-row{display:flex;align-items:center;gap:12px}
+    .color-row input[type=color]{width:60px;flex-shrink:0}
+    .color-row input[type=text]{flex:1}
+
+    .symbole-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+    .symbole-btn{background:#f4f6f9;border:2px solid #dde3ea;border-radius:8px;padding:10px 4px;
+      text-align:center;cursor:pointer;transition:all .2s;font-size:1.3rem}
+    .symbole-btn:hover{border-color:#2980b9}
+    .symbole-btn.active{border-color:#2980b9;background:#e8f4fd}
+    .symbole-btn span{display:block;font-size:0.65rem;color:#aaa;margin-top:4px}
+
+    .btn-preview{display:block;width:100%;padding:13px;background:#f4f6f9;color:#2980b9;
+      border:2px solid #2980b9;border-radius:10px;font-size:0.95rem;font-weight:bold;
+      cursor:pointer;margin-bottom:12px;transition:all .2s;text-transform:uppercase;letter-spacing:1px}
+    .btn-preview:hover{background:#2980b9;color:#fff}
+
+    .btn-pay{display:block;width:100%;padding:16px;
+      background:linear-gradient(135deg,#FFD700,#FFA500);
+      color:#0f0f1a;border:none;border-radius:10px;font-size:1.1rem;font-weight:bold;
+      cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:1px}
+    .btn-pay:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,165,0,.4)}
+
+    .btn-free{display:block;width:100%;padding:14px;background:#2ecc71;color:#fff;
+      border:none;border-radius:10px;font-size:1rem;font-weight:bold;cursor:pointer;
+      transition:all .2s;text-transform:uppercase;letter-spacing:1px;margin-top:10px}
+    .btn-free:hover{background:#27ae60}
+
+    .price-badge{text-align:center;margin-bottom:18px;font-size:2rem;font-weight:bold;color:#2980b9}
+    .price-badge span{font-size:0.88rem;color:#777;display:block;margin-top:4px}
+
+    #preview-img{max-width:100%;border-radius:10px;border:2px solid #dde3ea;display:none;margin-top:14px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+    .loading{color:#aaa;font-style:italic;display:none;text-align:center;padding:10px}
+
+    /* Admin badge */
+    .admin-badge{background:#2ecc71;color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:bold;display:inline-block;margin-left:12px}
+
+    /* Admin login */
+    .admin-login{position:fixed;bottom:20px;right:20px;background:#ffffff;border:1px solid #dde3ea;box-shadow:0 2px 12px rgba(0,0,0,0.1);
+      border-radius:12px;padding:14px;display:flex;gap:8px;align-items:center;z-index:100}
+    .admin-login input{width:140px;padding:8px;border-radius:6px;border:1px solid #2a2a4a;
+      background:#f4f6f9;color:#1a1a2e;font-size:0.85rem}
+    .admin-login button{padding:8px 14px;background:#2980b9;color:#fff;border:1px solid #2980b9;
+      border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:bold}
+    .admin-logout{position:fixed;bottom:20px;right:20px;background:#ffffff;border:1px solid #2ecc71;box-shadow:0 2px 12px rgba(0,0,0,0.1);
+      border-radius:12px;padding:10px 16px;z-index:100}
+    .admin-logout a{color:#2ecc71;text-decoration:none;font-size:0.85rem;font-weight:bold}
+
+    footer{text-align:center;padding:24px;color:#999;font-size:0.8rem;border-top:1px solid #eef0f3;background:#fff}
+
+    @media(max-width:650px){
+      .grid-2{grid-template-columns:1fr}
+      .grid-5{grid-template-columns:1fr 1fr}
+      .symbole-grid{grid-template-columns:repeat(3,1fr)}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🗓️ Rétroplanning en ligne
+    {% if admin %}<span class="admin-badge">👑 ADMIN</span>{% endif %}
+  </h1>
+  <p>Créez votre rétroplanning professionnel en 2 minutes · <strong>{{ prix }} € TTC</strong></p>
+</header>
+
+<div class="container">
+  <form id="mainForm" method="POST" action="/pay">
+
+    <!-- Événement -->
+    <div class="card">
+      <h2>📌 Votre événement</h2>
+      <div class="grid-2">
+        <div>
+          <label>Nom de l'événement *</label>
+          <input type="text" name="evenement" placeholder="Ex : Salon du Marketing 2026" required/>
+        </div>
+        <div>
+          <label>Date de l'événement *</label>
+          <input type="date" name="date_evenement" required/>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 étapes -->
+    <div class="card">
+      <h2>📋 Les 5 étapes clés</h2>
+      <div class="grid-5">
+        {% for i in range(1,6) %}
+        <div class="etape-block">
+          <div class="etape-num">Étape {{ i }}</div>
+          <label>Intitulé</label>
+          <input type="text" name="etape{{ i }}_label" placeholder="Ex : Brief" style="margin-bottom:8px"/>
+          <label>Date</label>
+          <input type="date" name="etape{{ i }}_date"/>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Personnalisation -->
+    <div class="card">
+      <h2>🎨 Personnalisation</h2>
+
+      <div class="grid-2" style="margin-bottom:20px">
+        <div>
+          <label>Couleur principale</label>
+          <div class="color-row">
+            <input type="color" id="c1picker" value="#e74c3c" oninput="syncColor('c1')"/>
+            <input type="text" id="c1hex" name="couleur1" value="#e74c3c" placeholder="#e74c3c"
+                   oninput="syncPicker('c1')" maxlength="7"/>
+          </div>
+        </div>
+        <div>
+          <label>Couleur secondaire</label>
+          <div class="color-row">
+            <input type="color" id="c2picker" value="#3498db" oninput="syncColor('c2')"/>
+            <input type="text" id="c2hex" name="couleur2" value="#3498db" placeholder="#3498db"
+                   oninput="syncPicker('c2')" maxlength="7"/>
+          </div>
+        </div>
+      </div>
+
+      <label style="margin-bottom:10px">Symbole des étapes</label>
+      <input type="hidden" name="symbole" id="symboleInput" value="losange"/>
+      <div class="symbole-grid">
+        <div class="symbole-btn active" onclick="selectSymbole('losange',this)">◇<span>Losange</span></div>
+        <div class="symbole-btn" onclick="selectSymbole('hexagone',this)">⬡<span>Hexagone</span></div>
+        <div class="symbole-btn" onclick="selectSymbole('cercle',this)">●<span>Cercle</span></div>
+        <div class="symbole-btn" onclick="selectSymbole('etoile',this)">★<span>Étoile</span></div>
+        <div class="symbole-btn" onclick="selectSymbole('fleche',this)">➤<span>Flèche</span></div>
+      </div>
+    </div>
+
+    <!-- Coordonnées -->
+    <div class="card">
+      <h2>🏢 Vos coordonnées <small style="font-size:0.75rem;color:#aaa;font-weight:normal">(apparaissent en bas du rétroplanning)</small></h2>
+      <div class="grid-2">
+        <div>
+          <label>Société *</label>
+          <input type="text" name="societe" placeholder="Nom de votre entreprise" required/>
+        </div>
+        <div>
+          <label>Nom & Prénom *</label>
+          <input type="text" name="contact" placeholder="Jean Dupont" required/>
+        </div>
+        <div>
+          <label>Email *</label>
+          <input type="email" name="email_client" placeholder="contact@societe.fr" required/>
+        </div>
+        <div>
+          <label>Téléphone</label>
+          <input type="tel" name="telephone" placeholder="06 XX XX XX XX"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prévisualisation -->
+    <div class="card">
+      <h2>👁️ Prévisualisation</h2>
+      <button type="button" class="btn-preview" onclick="previewRP()">🔄 Générer la prévisualisation</button>
+      <p class="loading" id="loading-txt">⏳ Génération en cours…</p>
+      <img id="preview-img" src="" alt="Aperçu du rétroplanning"/>
+      <p style="color:#999;font-size:0.78rem;text-align:center;margin-top:8px">
+        ⚠️ L'aperçu contient un filigrane — le fichier final téléchargé après paiement est sans filigrane.
+      </p>
+    </div>
+
+    <!-- Paiement -->
+    <div class="card">
+      <h2>💳 Commander</h2>
+      <div class="price-badge">
+        {{ prix }} € TTC
+        <span>✅ PNG haute résolution + Facture PDF — téléchargement immédiat</span>
+      </div>
+      <button type="submit" class="btn-pay" {% if admin %}formaction="/download-free"{% endif %}>
+        {% if admin %}
+          👑 Télécharger gratuitement (Admin)
+        {% else %}
+          🛒 Payer {{ prix }} € et télécharger
+        {% endif %}
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<footer>
+  retroplanning.eu — Solution professionnelle de rétroplanning en ligne<br/>
+  <small>Paiement sécurisé PayPal · Facture PDF incluse</small>
+</footer>
+
+<!-- Admin login (discret, en bas à droite) -->
+{% if not admin %}
+<form class="admin-login" method="POST" action="/admin-login">
+  <input type="password" name="password" placeholder="🔑 Admin"/>
+  <button type="submit">OK</button>
+</form>
+{% else %}
+<div class="admin-logout">
+  <a href="/admin-logout">🚪 Déconnexion admin</a>
+</div>
+{% endif %}
+
+<script>
+function syncColor(id) {
+  const picker = document.getElementById(id+'picker');
+  const hex    = document.getElementById(id+'hex');
+  hex.value = picker.value;
+}
+function syncPicker(id) {
+  const hex    = document.getElementById(id+'hex');
+  const picker = document.getElementById(id+'picker');
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex.value)) picker.value = hex.value;
+}
+function selectSymbole(val, el) {
+  document.querySelectorAll('.symbole-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('symboleInput').value = val;
+}
+function previewRP() {
+  const form    = document.getElementById('mainForm');
+  const formData = new FormData(form);
+  const img     = document.getElementById('preview-img');
+  const loading = document.getElementById('loading-txt');
+  loading.style.display = 'block';
+  img.style.display = 'none';
+  fetch('/preview', {method:'POST', body:formData})
+    .then(r => r.blob())
+    .then(blob => {
+      img.src = URL.createObjectURL(blob);
+      img.style.display = 'block';
+      loading.style.display = 'none';
+    })
+    .catch(() => { loading.textContent = '❌ Erreur lors de la génération.'; });
+}
+</script>
+</body>
+</html>
