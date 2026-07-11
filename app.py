@@ -2,14 +2,14 @@ from flask import Flask, render_template, request, send_file, redirect, session
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Polygon
+from matplotlib.patches import FancyBboxPatch
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_RIGHT, TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_RIGHT, TA_CENTER
 import os, uuid, json
 
 app = Flask(__name__)
@@ -31,7 +31,6 @@ VENDEUR = {
     "tva":     "FR01432764785",
     "email":   "commercial@omnipub.net",
     "tel":     "04 99 13 63 33",
-    "web":     "www.omnipub.net",
 }
 
 ORDERS_FILE = '/tmp/orders.json'
@@ -57,12 +56,8 @@ def next_invoice_number():
     count = sum(1 for o in orders.values() if o.get('paid')) + 1
     return f"FAC-{year}-{count:04d}"
 
-def generate_png(nom_client, nom_evenement, steps,
-                 phone='', email='', footer_societe='', website='',
-                 color1='#3F8078', color2='#75A097'):
-
-    C_MAIN  = color1
-    C_ALT   = color2
+def generate_png(nom_client, nom_evenement, steps, phone, email,
+                 web, footer_societe, c_main="#3F8078", c_alt="#75A097"):
     C_DARK  = "#1A1A1A"
     C_WHITE = "#FFFFFF"
 
@@ -72,94 +67,110 @@ def generate_png(nom_client, nom_evenement, steps,
     ax.set_ylim(0, 8)
     ax.axis('off')
 
-    # Header
-    ax.add_patch(plt.Rectangle((0, 6.5), 16, 1.5, color=C_MAIN))
+    ax.add_patch(plt.Rectangle((0, 6.5), 16, 1.5, color=c_main))
     ax.text(8, 7.5, "RETROPLANNING DE PRODUCTION",
             ha='center', va='center', fontsize=20, color=C_WHITE, fontweight='bold')
     ax.text(8, 7.0, f"{nom_evenement} | {nom_client}",
             ha='center', va='center', fontsize=14, color=C_WHITE)
 
-    # Timeline
     start_date = steps[0]['date']
     end_date   = steps[-1]['date']
     total_days = max((end_date - start_date).days, 1)
 
-    def get_x(date):
-        return 1 + 14 * ((date - start_date).days / total_days)
+    def get_x(d):
+        return 1 + 14 * ((d - start_date).days / total_days)
 
-    # Barre de fond
-    ax.add_patch(FancyBboxPatch((1, 3.75), 14, 0.5,
-                 boxstyle="round,pad=0.1", color=C_MAIN, alpha=0.2))
+    ax.add_patch(FancyBboxPatch((1, 3.8), 14, 0.4,
+                 boxstyle="round,pad=0.1", color=c_main, alpha=0.2))
 
-    # Segments colorés alternés
     for i in range(len(steps) - 1):
         x0 = get_x(steps[i]['date'])
         x1 = get_x(steps[i+1]['date'])
-        col = C_MAIN if i % 2 == 0 else C_ALT
-        ax.add_patch(plt.Rectangle((x0, 3.75), x1 - x0, 0.5, color=col, zorder=2))
+        col = c_main if i % 2 == 0 else c_alt
+        ax.add_patch(plt.Rectangle((x0, 3.8), x1 - x0, 0.4,
+                     linewidth=0, facecolor=col, zorder=3))
 
-    # Jalons
     for i, step in enumerate(steps):
         x    = get_x(step['date'])
         side = "top" if i % 2 == 0 else "bottom"
-        ax.scatter(x, 4.0, s=250, color=C_WHITE, edgecolors=C_MAIN, linewidths=2.5, zorder=5)
-        ax.scatter(x, 4.0, s=100, color=C_MAIN, zorder=6)
-        y_text = 5.4 if side == "top" else 2.6
-        ax.plot([x, x], [4.25 if side=="top" else 3.75, y_text],
-                color=C_MAIN, linestyle='--', alpha=0.5, linewidth=1.2)
-        ax.text(x, y_text + (0.15 if side == "top" else -0.15),
+        ax.scatter(x, 4, s=200, color=c_main, zorder=5)
+        y_text = 5.2 if side == "top" else 2.8
+        ax.plot([x, x], [4, y_text], color=c_main, linestyle='--', alpha=0.5)
+        ax.text(x, y_text + (0.2 if side == "top" else -0.2),
                 step['label'], ha='center',
                 va='bottom' if side == "top" else 'top',
-                fontsize=9, fontweight='bold', color=C_DARK)
-        ax.text(x, y_text + (0.55 if side == "top" else -0.55),
+                fontsize=10, fontweight='bold', color=C_DARK)
+        ax.text(x, y_text + (0.6 if side == "top" else -0.6),
                 step['date'].strftime('%d/%m/%Y'),
-                ha='center', va='center', color=C_WHITE, fontweight='bold', fontsize=10,
-                bbox=dict(boxstyle="round,pad=0.3", facecolor=C_MAIN, edgecolor='none'))
+                ha='center', va='center', color=C_WHITE, fontweight='bold',
+                bbox=dict(boxstyle="round,pad=0.3", facecolor=c_main, edgecolor='none'))
 
-    # Footer dynamique
-    parts = [p for p in [footer_societe, phone, email, website] if p.strip()]
+    parts = [p for p in [footer_societe, phone, email, web] if p]
     footer = "  |  ".join(parts) if parts else nom_client
-    ax.plot([0.5, 15.5], [0.8, 0.8], color='#CCCCCC', linewidth=0.8)
-    ax.text(8, 0.45, footer, ha='center', va='center',
+    ax.text(8, 0.5, footer, ha='center', va='center',
             fontsize=11, color=C_DARK, fontweight='bold')
 
     filename = f"retroplanning_{nom_client.replace(' ', '_')}_{uuid.uuid4().hex[:6]}.png"
     filepath = os.path.join('/tmp', filename)
-    plt.savefig(filepath, dpi=200, bbox_inches='tight', facecolor='white')
+    plt.savefig(filepath, dpi=200, bbox_inches='tight')
     plt.close()
     return filepath
 
 
+def get_steps_from_form(form):
+    steps = []
+    for i in range(1, 5):
+        label    = form.get(f'label{i}', '').strip()
+        date_str = form.get(f'date{i}', '').strip()
+        # OPTIONNEL : on ignore si l'un des deux est manquant
+        if label and date_str:
+            try:
+                steps.append({'label': label,
+                              'date': datetime.strptime(date_str, '%Y-%m-%d')})
+            except ValueError:
+                pass
+    date_event_str = form.get('date_event', '').strip()
+    if date_event_str:
+        try:
+            steps.append({'label': 'EVENEMENT',
+                          'date': datetime.strptime(date_event_str, '%Y-%m-%d')})
+        except ValueError:
+            pass
+    steps.sort(key=lambda x: x['date'])
+    return steps
+
+
 def generate_facture(order, client_info, num_facture):
-    filename = f"facture_{num_facture}.pdf"
-    filepath = os.path.join('/tmp', filename)
-    doc  = SimpleDocTemplate(filepath, pagesize=A4,
-                             rightMargin=2*cm, leftMargin=2*cm,
-                             topMargin=2*cm, bottomMargin=2*cm)
+    filepath = os.path.join('/tmp', f"facture_{num_facture}.pdf")
+    doc   = SimpleDocTemplate(filepath, pagesize=A4,
+                              rightMargin=2*cm, leftMargin=2*cm,
+                              topMargin=2*cm, bottomMargin=2*cm)
     story = []
     green = colors.HexColor('#3F8078')
-    sv = ParagraphStyle('sv', fontSize=10, leading=14)
+    sv    = ParagraphStyle('sv', fontSize=10, leading=14)
 
-    story.append(Paragraph(f"<b>{VENDEUR['nom']}</b>", ParagraphStyle('v', fontSize=14, textColor=green, spaceAfter=4)))
-    story.append(Paragraph(VENDEUR['adresse'], sv))
-    story.append(Paragraph(f"{VENDEUR['cp']} {VENDEUR['ville']}", sv))
-    story.append(Paragraph(f"SIRET : {VENDEUR['siret']}", sv))
-    story.append(Paragraph(f"N° TVA : {VENDEUR['tva']}", sv))
-    story.append(Paragraph(f"Email : {VENDEUR['email']} | Tél : {VENDEUR['tel']}", sv))
-    story.append(Spacer(1, 0.8*cm))
-
-    story.append(Paragraph(f"<b>FACTURE N° {num_facture}</b>",
-                            ParagraphStyle('t', fontSize=16, textColor=green, alignment=TA_CENTER, spaceAfter=4)))
-    story.append(Paragraph(f"Date : {datetime.now().strftime('%d/%m/%Y')}",
-                            ParagraphStyle('d', fontSize=10, alignment=TA_CENTER, spaceAfter=12)))
-    story.append(Spacer(1, 0.5*cm))
-
-    story.append(Paragraph("<b>Facturé à :</b>", ParagraphStyle('h', fontSize=11, textColor=green, spaceAfter=4)))
-    story.append(Paragraph(f"<b>{client_info.get('raison_sociale','')}</b>", sv))
-    story.append(Paragraph(client_info.get('adresse',''), sv))
-    story.append(Paragraph(f"{client_info.get('cp','')} {client_info.get('ville','')}", sv))
-    if client_info.get('siret'): story.append(Paragraph(f"SIRET : {client_info['siret']}", sv))
-    if client_info.get('tva_intra'): story.append(Paragraph(f"N° TVA : {client_info['tva_intra']}", sv))
+    story += [
+        Paragraph(f"<b>{VENDEUR['nom']}</b>", ParagraphStyle('v', fontSize=14, textColor=green, spaceAfter=4)),
+        Paragraph(VENDEUR['adresse'], sv),
+        Paragraph(f"{VENDEUR['cp']} {VENDEUR['ville']}", sv),
+        Paragraph(f"SIRET : {VENDEUR['siret']}", sv),
+        Paragraph(f"N° TVA : {VENDEUR['tva']}", sv),
+        Paragraph(f"Email : {VENDEUR['email']} | Tél : {VENDEUR['tel']}", sv),
+        Spacer(1, 0.8*cm),
+        Paragraph(f"<b>FACTURE N° {num_facture}</b>",
+                  ParagraphStyle('t', fontSize=16, textColor=green, alignment=TA_CENTER, spaceAfter=4)),
+        Paragraph(f"Date : {datetime.now().strftime('%d/%m/%Y')}",
+                  ParagraphStyle('d', fontSize=10, alignment=TA_CENTER, spaceAfter=12)),
+        Spacer(1, 0.5*cm),
+        Paragraph("<b>Facturé à :</b>", ParagraphStyle('h', fontSize=11, textColor=green, spaceAfter=4)),
+        Paragraph(f"<b>{client_info.get('raison_sociale','')}</b>", sv),
+        Paragraph(client_info.get('adresse',''), sv),
+        Paragraph(f"{client_info.get('cp','')} {client_info.get('ville','')}", sv),
+    ]
+    if client_info.get('siret'):
+        story.append(Paragraph(f"SIRET : {client_info['siret']}", sv))
+    if client_info.get('tva_intra'):
+        story.append(Paragraph(f"N° TVA : {client_info['tva_intra']}", sv))
     story.append(Spacer(1, 0.8*cm))
 
     data = [
@@ -167,50 +178,46 @@ def generate_facture(order, client_info, num_facture):
         ['Rétroplanning de production (PNG HD)', '1',
          f"{PRIX_HT:.2f} €", f"20% ({TVA:.2f} €)", f"{PRIX_TTC:.2f} €"],
     ]
-    table = Table(data, colWidths=[8*cm, 1.5*cm, 2.5*cm, 3*cm, 2.5*cm])
-    table.setStyle(TableStyle([
-        ('BACKGROUND',(0,0),(-1,0),green), ('TEXTCOLOR',(0,0),(-1,0),colors.white),
-        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'), ('FONTSIZE',(0,0),(-1,-1),9),
-        ('ALIGN',(1,0),(-1,-1),'CENTER'),
-        ('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#F0F7F6')]),
-        ('GRID',(0,0),(-1,-1),0.5,colors.HexColor('#CCCCCC')),
-        ('TOPPADDING',(0,0),(-1,-1),6), ('BOTTOMPADDING',(0,0),(-1,-1),6),
+    t = Table(data, colWidths=[8*cm, 1.5*cm, 2.5*cm, 3*cm, 2.5*cm])
+    t.setStyle(TableStyle([
+        ('BACKGROUND',    (0,0),(-1,0), green),
+        ('TEXTCOLOR',     (0,0),(-1,0), colors.white),
+        ('FONTNAME',      (0,0),(-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE',      (0,0),(-1,-1), 9),
+        ('ALIGN',         (1,0),(-1,-1), 'CENTER'),
+        ('GRID',          (0,0),(-1,-1), 0.5, colors.HexColor('#CCCCCC')),
+        ('TOPPADDING',    (0,0),(-1,-1), 6),
+        ('BOTTOMPADDING', (0,0),(-1,-1), 6),
     ]))
-    story.append(table)
-    story.append(Spacer(1, 0.5*cm))
-    story.append(Paragraph(f"<b>Total HT : {PRIX_HT:.2f} €</b>", ParagraphStyle('t1', fontSize=10, alignment=TA_RIGHT)))
-    story.append(Paragraph(f"TVA 20% : {TVA:.2f} €", ParagraphStyle('t2', fontSize=10, alignment=TA_RIGHT)))
-    story.append(Paragraph(f"<b>Total TTC : {PRIX_TTC:.2f} €</b>",
-                            ParagraphStyle('t3', fontSize=12, textColor=green, alignment=TA_RIGHT, spaceBefore=4)))
-    story.append(Spacer(1, 1*cm))
-    story.append(Paragraph("Règlement effectué par PayPal. Merci pour votre confiance.",
-                            ParagraphStyle('f', fontSize=9, textColor=colors.grey, alignment=TA_CENTER)))
+    story += [t, Spacer(1, 0.5*cm),
+              Paragraph(f"<b>Total HT : {PRIX_HT:.2f} €</b>",
+                        ParagraphStyle('r1', fontSize=10, alignment=TA_RIGHT)),
+              Paragraph(f"TVA 20% : {TVA:.2f} €",
+                        ParagraphStyle('r2', fontSize=10, alignment=TA_RIGHT)),
+              Paragraph(f"<b>Total TTC : {PRIX_TTC:.2f} €</b>",
+                        ParagraphStyle('r3', fontSize=12, textColor=green,
+                                       alignment=TA_RIGHT, spaceBefore=4)),
+              Spacer(1, 1*cm),
+              Paragraph("Règlement effectué par PayPal. Merci pour votre confiance.",
+                        ParagraphStyle('f', fontSize=9, textColor=colors.grey, alignment=TA_CENTER))]
     doc.build(story)
     return filepath
 
 
-def get_steps_from_form(form):
-    steps = []
-    for i in range(1, 5):
-        label    = form.get(f'label{i}')
-        date_str = form.get(f'date{i}')
-        if label and date_str:
-            steps.append({'label': label, 'date': datetime.strptime(date_str, '%Y-%m-%d')})
-    date_event_str = form.get('date_event')
-    if date_event_str:
-        steps.append({'label': 'EVENEMENT', 'date': datetime.strptime(date_event_str, '%Y-%m-%d')})
-    steps.sort(key=lambda x: x['date'])
-    return steps
-
-
 @app.route('/')
 def index():
-    return render_template('index.html', prix=f"{PRIX_TTC:.2f}", paypal_email=PAYPAL_EMAIL)
-
+    return render_template('index.html', prix=f"{PRIX_TTC:.2f}")
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
     token = uuid.uuid4().hex
+    steps_raw = []
+    for i in range(1, 5):
+        label    = request.form.get(f'label{i}', '').strip()
+        date_str = request.form.get(f'date{i}', '').strip()
+        if label and date_str:
+            steps_raw.append((label, date_str))
+
     order_data = {
         'token':          token,
         'paid':           False,
@@ -218,11 +225,11 @@ def checkout():
         'nom_evenement':  request.form.get('evenement', ''),
         'phone':          request.form.get('phone', ''),
         'email':          request.form.get('email', ''),
+        'web':            request.form.get('web', ''),
         'footer_societe': request.form.get('footer_societe', ''),
-        'website':        request.form.get('website', ''),
-        'color1':         request.form.get('color1', '#3F8078'),
-        'color2':         request.form.get('color2', '#75A097'),
-        'steps_raw':      [(request.form.get(f'label{i}'), request.form.get(f'date{i}')) for i in range(1, 5)],
+        'c_main':         request.form.get('c_main', '#3F8078'),
+        'c_alt':          request.form.get('c_alt', '#75A097'),
+        'steps_raw':      steps_raw,
         'date_event':     request.form.get('date_event', ''),
     }
     save_order(token, order_data)
@@ -241,7 +248,6 @@ def checkout():
     })
     return redirect(f"https://www.paypal.com/cgi-bin/webscr?{params}")
 
-
 @app.route('/success', methods=['GET', 'POST'])
 def success():
     token = request.args.get('token', '')
@@ -255,21 +261,26 @@ def success():
     steps = []
     for label, date_str in order.get('steps_raw', []):
         if label and date_str:
-            steps.append({'label': label, 'date': datetime.strptime(date_str, '%Y-%m-%d')})
+            try:
+                steps.append({'label': label, 'date': datetime.strptime(date_str, '%Y-%m-%d')})
+            except ValueError:
+                pass
     if order.get('date_event'):
-        steps.append({'label': 'EVENEMENT', 'date': datetime.strptime(order['date_event'], '%Y-%m-%d')})
+        try:
+            steps.append({'label': 'EVENEMENT', 'date': datetime.strptime(order['date_event'], '%Y-%m-%d')})
+        except ValueError:
+            pass
     steps.sort(key=lambda x: x['date'])
 
     png_path = generate_png(
         order['nom_client'], order['nom_evenement'], steps,
         order.get('phone',''), order.get('email',''),
-        order.get('footer_societe',''), order.get('website',''),
-        order.get('color1','#3F8078'), order.get('color2','#75A097')
+        order.get('web',''), order.get('footer_societe',''),
+        order.get('c_main','#3F8078'), order.get('c_alt','#75A097')
     )
     order['png_path'] = png_path
     save_order(token, order)
     return render_template('success.html', token=token, order=order)
-
 
 @app.route('/download/png/<token>')
 def download_png(token):
@@ -279,42 +290,32 @@ def download_png(token):
     return send_file(order['png_path'], as_attachment=True,
                      download_name=f"retroplanning_{order['nom_client'].replace(' ','_')}.png")
 
-
 @app.route('/facture/<token>', methods=['GET', 'POST'])
 def facture(token):
     order = get_order(token)
     if not order or not order.get('paid'):
         return "Accès non autorisé.", 403
     if request.method == 'POST':
-        client_info = {
-            'raison_sociale': request.form.get('raison_sociale',''),
-            'adresse':        request.form.get('adresse',''),
-            'cp':             request.form.get('cp',''),
-            'ville':          request.form.get('ville',''),
-            'siret':          request.form.get('siret',''),
-            'tva_intra':      request.form.get('tva_intra',''),
-        }
+        client_info = {k: request.form.get(k, '') for k in
+                       ['raison_sociale','adresse','cp','ville','siret','tva_intra']}
         num = next_invoice_number()
         pdf_path = generate_facture(order, client_info, num)
         return send_file(pdf_path, as_attachment=True, download_name=f"facture_{num}.pdf")
     return render_template('facture.html', token=token, order=order)
 
-
 @app.route('/cancel')
 def cancel():
     return render_template('cancel.html')
-
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_login():
     error = None
     if request.method == 'POST':
-        if request.form.get('password','') == ADMIN_PASSWORD:
+        if request.form.get('password', '') == ADMIN_PASSWORD:
             session['admin'] = True
             return redirect('/admin/generate')
         error = "Mot de passe incorrect."
     return render_template('admin_login.html', error=error)
-
 
 @app.route('/admin/generate', methods=['GET', 'POST'])
 def admin_generate():
@@ -322,26 +323,23 @@ def admin_generate():
         return redirect('/admin')
     if request.method == 'POST':
         steps = get_steps_from_form(request.form)
+        if len(steps) < 2:
+            return "Il faut au moins 1 étape + la date d'événement.", 400
         filepath = generate_png(
             request.form.get('client','CLIENT'),
             request.form.get('evenement','EVENEMENT'),
             steps,
-            request.form.get('phone',''),
-            request.form.get('email',''),
-            request.form.get('footer_societe',''),
-            request.form.get('website',''),
-            request.form.get('color1','#3F8078'),
-            request.form.get('color2','#75A097'),
+            request.form.get('phone',''), request.form.get('email',''),
+            request.form.get('web',''), request.form.get('footer_societe',''),
+            request.form.get('c_main','#3F8078'), request.form.get('c_alt','#75A097')
         )
         return send_file(filepath, as_attachment=True)
     return render_template('admin_generate.html')
-
 
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin', None)
     return redirect('/')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
