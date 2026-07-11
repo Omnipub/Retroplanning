@@ -18,159 +18,53 @@
             <p class="text-slate-600 mt-2">Créez votre document professionnel en quelques clics · <strong>{{ prix }}€ TTC</strong></p>  
         </header>
 
-        <form action="/checkout" method="POST" class="space-y-6">
-
-            <!-- ÉVÉNEMENT -->  
+        <form action="/checkout" method="POST" class="space-y-6">  
             <div class="card p-6">  
                 <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">📌 Votre événement</h2>  
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
-                    <div>  
-                        <label class="block text-sm font-medium text-slate-700">Nom du client *</label>  
-                        <input type="text" name="client" required placeholder="Ex : Mairie de Lyon"  
-                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">  
-                    </div>  
-                    <div>  
-                        <label class="block text-sm font-medium text-slate-700">Nom de l'événement *</label>  
-                        <input type="text" name="evenement" required placeholder="Ex : Salon du Marketing 2026"  
-                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">  
-                    </div>  
+                    <input type="text" name="client" required placeholder="Nom du client" class="border rounded-md p-2">  
+                    <input type="text" name="evenement" required placeholder="Nom de l'événement" class="border rounded-md p-2">  
                 </div>  
             </div>
 
-            <!-- 4 ÉTAPES — dates NON obligatoires -->  
             <div class="card p-6">  
                 <h2 class="text-xl font-semibold mb-1 dyn-text" style="color:#3F8078">📋 Vos étapes clés</h2>  
-                <p class="text-xs text-slate-400 mb-4">Remplissez uniquement les étapes dont vous avez besoin (minimum 1)</p>  
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
+                <p class="text-xs text-slate-400 mb-4">Remplissez uniquement les étapes nécessaires (les autres resteront vides)</p>  
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">  
+                    {% for i in range(1, 5) %}  
                     <div class="p-3 border rounded-lg bg-slate-50">  
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 1</span>  
-                        <input type="text" name="label1" placeholder="Ex : Validation commande"  
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
-                        <input type="date" name="date1"  
-                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
-                    </div>
-
-                    <div class="p-3 border rounded-lg bg-slate-50">  
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 2</span>  
-                        <input type="text" name="label2" placeholder="Ex : Validation BAT"  
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
-                        <input type="date" name="date2"  
-                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
-                    </div>
-
-                    <div class="p-3 border rounded-lg bg-slate-50">  
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 3</span>  
-                        <input type="text" name="label3" placeholder="Ex : Production"  
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
-                        <input type="date" name="date3"  
-                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
-                    </div>
-
-                    <div class="p-3 border rounded-lg bg-slate-50">  
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 4</span>  
-                        <input type="text" name="label4" placeholder="Ex : Expédition"  
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
-                        <input type="date" name="date4"  
-                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
-                    </div>
-
-                </div>
-
-                <!-- Date événement — obligatoire -->  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape {{ i }}</span>  
+                        <input type="text" name="label{{ i }}" placeholder="Ex : Commande" class="mt-1 block w-full text-sm border p-1 mb-2">  
+                        <input type="date" name="date{{ i }}" class="block w-full text-sm border p-1">  
+                    </div>  
+                    {% endfor %}  
+                </div>  
                 <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">  
-                    <label class="block text-sm font-bold dyn-text" style="color:#3F8078">🎯 DATE DE L'ÉVÉNEMENT (Jalon final) *</label>  
-                    <input type="date" name="date_event" required  
-                           class="mt-1 block w-full rounded-md border-teal-300 border p-2">  
+                    <label class="block text-sm font-bold dyn-text" style="color:#3F8078">🎯 DATE DE L'ÉVÉNEMENT (Obligatoire)</label>  
+                    <input type="date" name="date_event" required class="mt-1 block w-full border-teal-300 border p-2">  
                 </div>  
             </div>
 
-            <!-- COULEURS -->  
             <div class="card p-6">  
-                <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">🎨 Couleurs de votre charte</h2>  
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">  
-                    <div>  
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Couleur principale</label>  
-                        <div class="flex items-center gap-3">  
-                            <input type="color" id="cp-picker" value="#3F8078"  
-                                   class="w-12 h-10 rounded cursor-pointer border-0">  
-                            <input type="text" id="cp-hex" name="c_main" value="#3F8078" maxlength="7"  
-                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">  
-                        </div>  
-                    </div>  
-                    <div>  
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Couleur secondaire</label>  
-                        <div class="flex items-center gap-3">  
-                            <input type="color" id="cs-picker" value="#75A097"  
-                                   class="w-12 h-10 rounded cursor-pointer border-0">  
-                            <input type="text" id="cs-hex" name="c_alt" value="#75A097" maxlength="7"  
-                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">  
-                        </div>  
-                    </div>  
+                <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">🎨 Personnalisation & Pied de page</h2>  
+                <div class="grid grid-cols-2 gap-4 mb-4">  
+                    <input type="color" name="c_main" value="#3F8078" class="w-full h-10">  
+                    <input type="color" name="c_alt" value="#75A097" class="w-full h-10">  
                 </div>  
-                <div class="mt-4">  
-                    <p class="text-xs text-slate-500 mb-2">Aperçu de la timeline :</p>  
-                    <div class="flex rounded-full overflow-hidden h-4 w-full">  
-                        <div id="pv1" class="flex-1" style="background:#3F8078;"></div>  
-                        <div id="pv2" class="flex-1" style="background:#75A097;"></div>  
-                        <div id="pv3" class="flex-1" style="background:#3F8078;"></div>  
-                        <div id="pv4" class="flex-1" style="background:#75A097;"></div>  
-                    </div>  
+                <div class="grid grid-cols-2 gap-4">  
+                    <input type="text" name="footer_societe" placeholder="Votre société" class="border p-2">  
+                    <input type="text" name="phone" placeholder="Téléphone" class="border p-2">  
+                    <input type="email" name="email" placeholder="Email" class="border p-2">  
+                    <input type="text" name="web" placeholder="Site Web" class="border p-2">  
                 </div>  
             </div>
 
-            <!-- PIED DE PAGE -->  
-            <div class="card p-6">  
-                <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">📞 Pied de page du rétroplanning</h2>  
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
-                    <input type="text" name="footer_societe" placeholder="Nom de votre société"  
-                           class="block w-full rounded-md border-slate-300 border p-2">  
-                    <input type="text" name="phone" placeholder="Ex : 04 99 13 63 33"  
-                           class="block w-full rounded-md border-slate-300 border p-2">  
-                    <input type="email" name="email" placeholder="Ex : contact@societe.fr"  
-                           class="block w-full rounded-md border-slate-300 border p-2">  
-                    <input type="text" name="web" placeholder="Ex : www.societe.fr"  
-                           class="block w-full rounded-md border-slate-300 border p-2">  
-                </div>  
-            </div>
-
-            <!-- BOUTON -->  
             <div class="text-center">  
-                <button type="submit" id="btn-submit"  
-                        class="text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105"  
-                        style="background-color:#3F8078">  
+                <button type="submit" class="bg-teal-600 text-white font-bold py-4 px-10 rounded-full shadow-lg">  
                     💳 PAYER {{ prix }}€ ET GÉNÉRER MON PNG  
                 </button>  
-                <p class="text-slate-400 text-xs mt-2">🔒 Paiement sécurisé PayPal</p>  
             </div>  
         </form>  
-    </div>
-
-<script>  
-function isHex(h) { return /^#[0-9A-Fa-f]{6}$/.test(h); }
-
-function applyC1(hex) {  
-    if (!isHex(hex)) return;  
-    document.getElementById('cp-picker').value = hex;  
-    document.getElementById('cp-hex').value = hex.toUpperCase();  
-    document.querySelectorAll('.dyn-text').forEach(el => el.style.color = hex);  
-    document.getElementById('btn-submit').style.backgroundColor = hex;  
-    document.getElementById('pv1').style.background = hex;  
-    document.getElementById('pv3').style.background = hex;  
-}
-
-function applyC2(hex) {  
-    if (!isHex(hex)) return;  
-    document.getElementById('cs-picker').value = hex;  
-    document.getElementById('cs-hex').value = hex.toUpperCase();  
-    document.getElementById('pv2').style.background = hex;  
-    document.getElementById('pv4').style.background = hex;  
-}
-
-document.getElementById('cp-picker').addEventListener('input', e => applyC1(e.target.value));  
-document.getElementById('cp-hex').addEventListener('input',   e => applyC1(e.target.value));  
-document.getElementById('cs-picker').addEventListener('input', e => applyC2(e.target.value));  
-document.getElementById('cs-hex').addEventListener('input',   e => applyC2(e.target.value));  
-</script>  
+    </div>  
 </body>  
 </html>  
