@@ -9,18 +9,17 @@ import os
 app = Flask(__name__)
 
 # --- CONFIGURATION ---  
-PAYPAL_EMAIL    = "commercial@omnipub.net"  
-PRIX_TTC        = "5.00"  
-SITE_URL        = "https://www.retroplanning.eu"  
-ADMIN_PASSWORD  = "omnipub2026"   # ← Changez ce mot de passe !  
-app.secret_key  = "retroplanning_secret_key_2026"
+PAYPAL_EMAIL   = "commercial@omnipub.net"  
+PRIX_TTC       = "5.00"  
+SITE_URL       = "https://www.retroplanning.eu"  
+ADMIN_PASSWORD = "Omnipub&2026"  
+app.secret_key = "retroplanning_secret_key_2026"
 
 # ─────────────────────────────────────────────
 # GÉNÉRATION DU PNG
 # ─────────────────────────────────────────────  
 def generate_png(nom_client, nom_evenement, steps, phone, email):  
     C_MAIN  = "#3F8078"  
-    C_ALT   = "#75A097"  
     C_DARK  = "#1A1A1A"  
     C_WHITE = "#FFFFFF"
 
@@ -38,9 +37,9 @@ def generate_png(nom_client, nom_evenement, steps, phone, email):
             ha='center', va='center', fontsize=14, color=C_WHITE)
 
     # Timeline  
-    start_date  = steps[0]['date']  
-    end_date    = steps[-1]['date']  
-    total_days  = max((end_date - start_date).days, 1)
+    start_date = steps[0]['date']  
+    end_date   = steps[-1]['date']  
+    total_days = max((end_date - start_date).days, 1)
 
     def get_x(date):  
         return 1 + 14 * ((date - start_date).days / total_days)
@@ -64,7 +63,7 @@ def generate_png(nom_client, nom_evenement, steps, phone, email):
                 bbox=dict(boxstyle="round,pad=0.3", facecolor=C_MAIN, edgecolor='none'))
 
     # Footer  
-    footer = f"{nom_client}"  
+    footer = nom_client  
     if phone: footer += f" | {phone}"  
     if email: footer += f" | {email}"  
     ax.text(8, 0.5, footer, ha='center', va='center',  
@@ -76,6 +75,23 @@ def generate_png(nom_client, nom_evenement, steps, phone, email):
     plt.close()  
     return filepath
 
+
+def get_steps_from_form(form):  
+    steps = []  
+    for i in range(1, 5):  
+        label    = form.get(f'label{i}')  
+        date_str = form.get(f'date{i}')  
+        if label and date_str:  
+            steps.append({'label': label,  
+                          'date': datetime.strptime(date_str, '%Y-%m-%d')})  
+    date_event_str = form.get('date_event')  
+    if date_event_str:  
+        steps.append({'label': 'EVENEMENT',  
+                      'date': datetime.strptime(date_event_str, '%Y-%m-%d')})  
+    steps.sort(key=lambda x: x['date'])  
+    return steps
+
+
 # ─────────────────────────────────────────────
 # ROUTES PUBLIQUES
 # ─────────────────────────────────────────────  
@@ -83,29 +99,17 @@ def generate_png(nom_client, nom_evenement, steps, phone, email):
 def index():  
     return render_template('index.html', prix=PRIX_TTC, paypal_email=PAYPAL_EMAIL)
 
+
 @app.route('/generate', methods=['POST'])  
 def generate():  
     nom_client    = request.form.get('client', 'CLIENT')  
     nom_evenement = request.form.get('evenement', 'EVENEMENT')  
     phone         = request.form.get('phone', '')  
-    email         = request.form.get('email', '')
-
-    steps = []  
-    for i in range(1, 5):  
-        label    = request.form.get(f'label{i}')  
-        date_str = request.form.get(f'date{i}')  
-        if label and date_str:  
-            steps.append({'label': label,  
-                          'date': datetime.strptime(date_str, '%Y-%m-%d')})
-
-    date_event_str = request.form.get('date_event')  
-    if date_event_str:  
-        steps.append({'label': 'ÉVÉNEMENT',  
-                      'date': datetime.strptime(date_event_str, '%Y-%m-%d')})
-
-    steps.sort(key=lambda x: x['date'])  
-    filepath = generate_png(nom_client, nom_evenement, steps, phone, email)  
+    email         = request.form.get('email', '')  
+    steps         = get_steps_from_form(request.form)  
+    filepath      = generate_png(nom_client, nom_evenement, steps, phone, email)  
     return send_file(filepath, as_attachment=True)
+
 
 # ─────────────────────────────────────────────
 # ROUTES ADMIN
@@ -114,12 +118,14 @@ def generate():
 def admin_login():  
     error = None  
     if request.method == 'POST':  
-        if request.form.get('password') == ADMIN_PASSWORD:  
+        pwd = request.form.get('password', '')  
+        if pwd == ADMIN_PASSWORD:  
             session['admin'] = True  
             return redirect('/admin/generate')  
         else:  
             error = "Mot de passe incorrect."  
     return render_template('admin_login.html', error=error)
+
 
 @app.route('/admin/generate', methods=['GET', 'POST'])  
 def admin_generate():  
@@ -129,31 +135,18 @@ def admin_generate():
         nom_client    = request.form.get('client', 'CLIENT')  
         nom_evenement = request.form.get('evenement', 'EVENEMENT')  
         phone         = request.form.get('phone', '')  
-        email         = request.form.get('email', '')
-
-        steps = []  
-        for i in range(1, 5):  
-            label    = request.form.get(f'label{i}')  
-            date_str = request.form.get(f'date{i}')  
-            if label and date_str:  
-                steps.append({'label': label,  
-                              'date': datetime.strptime(date_str, '%Y-%m-%d')})
-
-        date_event_str = request.form.get('date_event')  
-        if date_event_str:  
-            steps.append({'label': 'ÉVÉNEMENT',  
-                          'date': datetime.strptime(date_event_str, '%Y-%m-%d')})
-
-        steps.sort(key=lambda x: x['date'])  
-        filepath = generate_png(nom_client, nom_evenement, steps, phone, email)  
-        return send_file(filepath, as_attachment=True)
-
+        email         = request.form.get('email', '')  
+        steps         = get_steps_from_form(request.form)  
+        filepath      = generate_png(nom_client, nom_evenement, steps, phone, email)  
+        return send_file(filepath, as_attachment=True)  
     return render_template('admin_generate.html')
+
 
 @app.route('/admin/logout')  
 def admin_logout():  
     session.pop('admin', None)  
     return redirect('/')
 
+
 if __name__ == '__main__':  
-    app.run(debug=True) 
+    app.run(debug=True)  
