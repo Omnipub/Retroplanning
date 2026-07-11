@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8 bg-slate-50">
+    <div class="max-w-xl mx-auto bg-white rounded-xl shadow p-8">
+        <h1 class="text-2xl font-bold text-teal-700 mb-6">🧾 Informations de facturation</h1>
+        <form action="/facture/{{ token }}" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700">Raison sociale *</label>
+                <input type="text" name="raison_sociale" required class="mt-1 block w-full border border-slate-300 rounded-md p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">Adresse *</label>
+                <input type="text" name="adresse" required class="mt-1 block w-full border border-slate-300 rounded-md p-2">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Code postal *</label>
+                    <input type="text" name="cp" required class="mt-1 block w-full border border-slate-300 rounded-md p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Ville *</label>
+                    <input type="text" name="ville" required class="mt-1 block w-full border border-slate-300 rounded-md p-2">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">SIRET</label>
+                <input type="text" name="siret" class="mt-1 block w-full border border-slate-300 rounded-md p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700">N° TVA intracommunautaire</label>
+                <input type="text" name="tva_client" class="mt-1 block w-full border border-slate-300 rounded-md p-2">
+            </div>
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-full">
+                📄 Générer ma facture PDF
+            </button>
+        </form>
+    </div>
+</body>
+</html>
