@@ -1,161 +1,176 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rétroplanning en ligne — 2€ TTC</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .preview-bar { height: 12px; border-radius: 6px; transition: background 0.3s; }
-        .dynamic-bg { transition: background-color 0.3s; }
-        .dynamic-border { transition: border-color 0.3s; }
-        .dynamic-text { transition: color 0.3s; }
-    </style>
-</head>
-<body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-3xl font-bold text-slate-800">🗓️ RÉTROPLANNING EN LIGNE</h1>
-            <p class="text-slate-600 mt-2">Créez votre document professionnel en quelques clics · <strong>{{ prix }}€ TTC</strong></p>
+<!DOCTYPE html>  
+<html lang="fr">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Rétroplanning en ligne — 2€ TTC</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  
+    <style>  
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }  
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }  
+    </style>  
+</head>  
+<body class="p-4 md:p-8">  
+    <div class="max-w-4xl mx-auto">  
+        <header class="text-center mb-10">  
+            <h1 class="text-3xl font-bold text-slate-800">🗓️ RÉTROPLANNING EN LIGNE</h1>  
+            <p class="text-slate-600 mt-2">Créez votre document professionnel en quelques clics · <strong>{{ prix }}€ TTC</strong></p>  
         </header>
 
-        <form action="/checkout" method="POST" class="space-y-6" id="mainForm">
+        <form action="/checkout" method="POST" class="space-y-6">
 
-            <!-- ÉVÉNEMENT -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 dynamic-text" id="h-event" style="color:#3F8078">📌 Votre événement</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Nom du client</label>
-                        <input type="text" name="client" required placeholder="Ex : Mairie de Lyon"
-                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Nom de l'événement</label>
-                        <input type="text" name="evenement" required placeholder="Ex : Salon du Marketing 2026"
-                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
-                    </div>
-                </div>
+            <!-- ÉVÉNEMENT -->  
+            <div class="card p-6">  
+                <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">📌 Votre événement</h2>  
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
+                    <div>  
+                        <label class="block text-sm font-medium text-slate-700">Nom du client *</label>  
+                        <input type="text" name="client" required placeholder="Ex : Mairie de Lyon"  
+                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">  
+                    </div>  
+                    <div>  
+                        <label class="block text-sm font-medium text-slate-700">Nom de l'événement *</label>  
+                        <input type="text" name="evenement" required placeholder="Ex : Salon du Marketing 2026"  
+                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">  
+                    </div>  
+                </div>  
             </div>
 
-            <!-- 4 ÉTAPES -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 dynamic-text" style="color:#3F8078">📋 Les 4 étapes clés</h2>
+            <!-- 4 ÉTAPES — dates NON obligatoires -->  
+            <div class="card p-6">  
+                <h2 class="text-xl font-semibold mb-1 dyn-text" style="color:#3F8078">📋 Vos étapes clés</h2>  
+                <p class="text-xs text-slate-400 mb-4">Remplissez uniquement les étapes dont vous avez besoin (minimum 1)</p>  
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="p-3 border rounded-lg bg-slate-50">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 1</span>
-                        <input type="text" name="label1" placeholder="Ex : Validation commande" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
-                        <input type="date" name="date1" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 1</span>  
+                        <input type="text" name="label1" placeholder="Ex : Validation commande"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date1"  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
                     </div>
-                    <div class="p-3 border rounded-lg bg-slate-50">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 2</span>
-                        <input type="text" name="label2" placeholder="Ex : Validation BAT" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
-                        <input type="date" name="date2" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 2</span>  
+                        <input type="text" name="label2" placeholder="Ex : Validation BAT"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date2"  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
                     </div>
-                    <div class="p-3 border rounded-lg bg-slate-50">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 3</span>
-                        <input type="text" name="label3" placeholder="Ex : Production" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
-                        <input type="date" name="date3" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 3</span>  
+                        <input type="text" name="label3" placeholder="Ex : Production"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date3"  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
                     </div>
-                    <div class="p-3 border rounded-lg bg-slate-50">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 4</span>
-                        <input type="text" name="label4" placeholder="Ex : Expédition" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
-                        <input type="date" name="date4" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 4</span>  
+                        <input type="text" name="label4" placeholder="Ex : Expédition"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date4"  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
                     </div>
+
                 </div>
-                <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg dynamic-border" id="event-box">
-                    <label class="block text-sm font-bold dynamic-text" style="color:#3F8078">🎯 DATE DE L'ÉVÉNEMENT (Jalon final)</label>
-                    <input type="date" name="date_event" required class="mt-1 block w-full rounded-md border-teal-300 border p-2">
-                </div>
+
+                <!-- Date événement — obligatoire -->  
+                <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">  
+                    <label class="block text-sm font-bold dyn-text" style="color:#3F8078">🎯 DATE DE L'ÉVÉNEMENT (Jalon final) *</label>  
+                    <input type="date" name="date_event" required  
+                           class="mt-1 block w-full rounded-md border-teal-300 border p-2">  
+                </div>  
             </div>
 
-            <!-- COULEURS -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 dynamic-text" style="color:#3F8078">🎨 Couleurs de votre charte</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Couleur principale</label>
-                        <div class="flex items-center gap-3">
-                            <input type="color" id="color1-picker" value="#3F8078" class="w-12 h-10 rounded cursor-pointer border-0">
-                            <input type="text" id="color1-hex" name="color1" value="#3F8078" maxlength="7"
-                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Couleur secondaire</label>
-                        <div class="flex items-center gap-3">
-                            <input type="color" id="color2-picker" value="#75A097" class="w-12 h-10 rounded cursor-pointer border-0">
-                            <input type="text" id="color2-hex" name="color2" value="#75A097" maxlength="7"
-                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">
-                        </div>
-                    </div>
-                </div>
-                <!-- Prévisualisation barre -->
-                <div class="mt-4">
-                    <p class="text-xs text-slate-500 mb-2">Aperçu de la timeline :</p>
-                    <div class="flex rounded-full overflow-hidden h-4 w-full">
-                        <div id="prev1" class="flex-1 preview-bar" style="background:#3F8078; border-radius:6px 0 0 6px;"></div>
-                        <div id="prev2" class="flex-1 preview-bar" style="background:#75A097;"></div>
-                        <div id="prev3" class="flex-1 preview-bar" style="background:#3F8078;"></div>
-                        <div id="prev4" class="flex-1 preview-bar" style="background:#75A097; border-radius:0 6px 6px 0;"></div>
-                    </div>
-                </div>
+            <!-- COULEURS -->  
+            <div class="card p-6">  
+                <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">🎨 Couleurs de votre charte</h2>  
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">  
+                    <div>  
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Couleur principale</label>  
+                        <div class="flex items-center gap-3">  
+                            <input type="color" id="cp-picker" value="#3F8078"  
+                                   class="w-12 h-10 rounded cursor-pointer border-0">  
+                            <input type="text" id="cp-hex" name="c_main" value="#3F8078" maxlength="7"  
+                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">  
+                        </div>  
+                    </div>  
+                    <div>  
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Couleur secondaire</label>  
+                        <div class="flex items-center gap-3">  
+                            <input type="color" id="cs-picker" value="#75A097"  
+                                   class="w-12 h-10 rounded cursor-pointer border-0">  
+                            <input type="text" id="cs-hex" name="c_alt" value="#75A097" maxlength="7"  
+                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">  
+                        </div>  
+                    </div>  
+                </div>  
+                <div class="mt-4">  
+                    <p class="text-xs text-slate-500 mb-2">Aperçu de la timeline :</p>  
+                    <div class="flex rounded-full overflow-hidden h-4 w-full">  
+                        <div id="pv1" class="flex-1" style="background:#3F8078;"></div>  
+                        <div id="pv2" class="flex-1" style="background:#75A097;"></div>  
+                        <div id="pv3" class="flex-1" style="background:#3F8078;"></div>  
+                        <div id="pv4" class="flex-1" style="background:#75A097;"></div>  
+                    </div>  
+                </div>  
             </div>
 
-            <!-- PIED DE PAGE -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 dynamic-text" style="color:#3F8078">📞 Pied de page</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="footer_societe" placeholder="Nom de votre société" class="block w-full rounded-md border-slate-300 border p-2">
-                    <input type="text" name="phone" placeholder="Ex : 04 99 13 63 33" class="block w-full rounded-md border-slate-300 border p-2">
-                    <input type="email" name="email" placeholder="Ex : contact@societe.fr" class="block w-full rounded-md border-slate-300 border p-2">
-                    <input type="text" name="website" placeholder="Ex : www.societe.fr" class="block w-full rounded-md border-slate-300 border p-2">
-                </div>
+            <!-- PIED DE PAGE -->  
+            <div class="card p-6">  
+                <h2 class="text-xl font-semibold mb-4 dyn-text" style="color:#3F8078">📞 Pied de page du rétroplanning</h2>  
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
+                    <input type="text" name="footer_societe" placeholder="Nom de votre société"  
+                           class="block w-full rounded-md border-slate-300 border p-2">  
+                    <input type="text" name="phone" placeholder="Ex : 04 99 13 63 33"  
+                           class="block w-full rounded-md border-slate-300 border p-2">  
+                    <input type="email" name="email" placeholder="Ex : contact@societe.fr"  
+                           class="block w-full rounded-md border-slate-300 border p-2">  
+                    <input type="text" name="web" placeholder="Ex : www.societe.fr"  
+                           class="block w-full rounded-md border-slate-300 border p-2">  
+                </div>  
             </div>
 
-            <!-- BOUTON -->
-            <div class="text-center">
-                <button type="submit" id="btn-submit"
-                        class="dynamic-bg text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105"
-                        style="background-color:#3F8078">
-                    💳 PAYER {{ prix }}€ ET GÉNÉRER MON PNG
-                </button>
-                <p class="text-slate-400 text-xs mt-2">🔒 Paiement sécurisé PayPal</p>
-            </div>
-        </form>
+            <!-- BOUTON -->  
+            <div class="text-center">  
+                <button type="submit" id="btn-submit"  
+                        class="text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105"  
+                        style="background-color:#3F8078">  
+                    💳 PAYER {{ prix }}€ ET GÉNÉRER MON PNG  
+                </button>  
+                <p class="text-slate-400 text-xs mt-2">🔒 Paiement sécurisé PayPal</p>  
+            </div>  
+        </form>  
     </div>
 
-<script>
-const C1_DEFAULT = '#3F8078';
-const C2_DEFAULT = '#75A097';
+<script>  
+function isHex(h) { return /^#[0-9A-Fa-f]{6}$/.test(h); }
 
-function isValidHex(h) { return /^#[0-9A-Fa-f]{6}$/.test(h); }
-
-function applyColor1(hex) {
-    if (!isValidHex(hex)) return;
-    document.getElementById('color1-picker').value = hex;
-    document.getElementById('color1-hex').value = hex.toUpperCase();
-    document.querySelectorAll('.dynamic-text').forEach(el => el.style.color = hex);
-    document.getElementById('btn-submit').style.backgroundColor = hex;
-    document.getElementById('prev1').style.background = hex;
-    document.getElementById('prev3').style.background = hex;
+function applyC1(hex) {  
+    if (!isHex(hex)) return;  
+    document.getElementById('cp-picker').value = hex;  
+    document.getElementById('cp-hex').value = hex.toUpperCase();  
+    document.querySelectorAll('.dyn-text').forEach(el => el.style.color = hex);  
+    document.getElementById('btn-submit').style.backgroundColor = hex;  
+    document.getElementById('pv1').style.background = hex;  
+    document.getElementById('pv3').style.background = hex;  
 }
 
-function applyColor2(hex) {
-    if (!isValidHex(hex)) return;
-    document.getElementById('color2-picker').value = hex;
-    document.getElementById('color2-hex').value = hex.toUpperCase();
-    document.getElementById('prev2').style.background = hex;
-    document.getElementById('prev4').style.background = hex;
+function applyC2(hex) {  
+    if (!isHex(hex)) return;  
+    document.getElementById('cs-picker').value = hex;  
+    document.getElementById('cs-hex').value = hex.toUpperCase();  
+    document.getElementById('pv2').style.background = hex;  
+    document.getElementById('pv4').style.background = hex;  
 }
 
-document.getElementById('color1-picker').addEventListener('input', e => applyColor1(e.target.value));
-document.getElementById('color1-hex').addEventListener('input', e => applyColor1(e.target.value));
-document.getElementById('color2-picker').addEventListener('input', e => applyColor2(e.target.value));
-document.getElementById('color2-hex').addEventListener('input', e => applyColor2(e.target.value));
-</script>
-</body>
-</html>
+document.getElementById('cp-picker').addEventListener('input', e => applyC1(e.target.value));  
+document.getElementById('cp-hex').addEventListener('input',   e => applyC1(e.target.value));  
+document.getElementById('cs-picker').addEventListener('input', e => applyC2(e.target.value));  
+document.getElementById('cs-hex').addEventListener('input',   e => applyC2(e.target.value));  
+</script>  
+</body>  
+</html>  
