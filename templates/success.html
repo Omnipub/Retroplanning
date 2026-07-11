@@ -1,74 +1,27 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paiement confirmé</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }</style>
-</head>
-<body class="p-4 md:p-8">
-    <div class="max-w-2xl mx-auto text-center">
-        <div class="bg-white rounded-2xl shadow-lg p-10 mt-10">
-            <div class="text-6xl mb-6">🎉</div>
-            <h1 class="text-3xl font-bold text-teal-700 mb-4">Paiement confirmé !</h1>
-            <p class="text-slate-600 mb-8">Merci pour votre commande. Votre rétroplanning est prêt à être téléchargé.</p>
-
-            <!-- Télécharger le PNG -->
-            <a href="/download/{{ token }}"
-               class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-lg transition transform hover:scale-105 mb-4">
-                ⬇️ Télécharger mon rétroplanning PNG
-            </a>
-
-            <div class="border-t border-slate-200 my-8"></div>
-
-            <!-- Section Facture -->
-            <h2 class="text-xl font-bold text-slate-700 mb-2">🧾 Besoin d'une facture ?</h2>
-            <p class="text-slate-500 text-sm mb-6">Remplissez vos informations pour générer votre facture PDF.</p>
-
-            <form action="/facture/{{ token }}" method="POST" class="text-left space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Raison sociale *</label>
-                        <input type="text" name="raison_sociale" required placeholder="Ex : DUPONT SAS"
-                               class="mt-1 block w-full rounded-md border border-slate-300 p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Adresse *</label>
-                        <input type="text" name="adresse" required placeholder="Ex : 12 rue de la Paix"
-                               class="mt-1 block w-full rounded-md border border-slate-300 p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Code postal *</label>
-                        <input type="text" name="cp" required placeholder="Ex : 75001"
-                               class="mt-1 block w-full rounded-md border border-slate-300 p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Ville *</label>
-                        <input type="text" name="ville" required placeholder="Ex : Paris"
-                               class="mt-1 block w-full rounded-md border border-slate-300 p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">SIRET</label>
-                        <input type="text" name="siret" placeholder="Ex : 123 456 789 00012"
-                               class="mt-1 block w-full rounded-md border border-slate-300 p-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">N° TVA intracommunautaire</label>
-                        <input type="text" name="tva_client" placeholder="Ex : FR12345678901"
-                               class="mt-1 block w-full rounded-md border border-slate-300 p-2 text-sm">
-                    </div>
-                </div>
-                <div class="text-center mt-4">
-                    <button type="submit"
-                            class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-full shadow transition">
-                        📄 Générer ma facture PDF
-                    </button>
-                </div>
-            </form>
-        </div>
-        <a href="/" class="text-teal-600 text-sm mt-6 inline-block hover:underline">← Créer un nouveau rétroplanning</a>
-    </div>
-</body>
-</html>
+<!DOCTYPE html>  
+<html lang="fr">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Paiement réussi !</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+</head>  
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">  
+    <div class="bg-white p-8 rounded-xl shadow-md max-w-md w-full text-center">  
+        <div class="text-green-500 text-6xl mb-4">✅</div>  
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">Paiement réussi !</h1>  
+        <p class="text-slate-600 mb-8">Merci pour votre commande. Votre rétroplanning est prêt.</p>  
+          
+        <div class="space-y-4">  
+            <!-- Le lien corrigé est ici : /download/png/... -->  
+            <a href="/download/png/{{ token }}" class="block w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md">  
+                📥 Télécharger mon Rétroplanning (PNG)  
+            </a>  
+              
+            <a href="/facture/{{ token }}" class="block w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-lg transition">  
+                🧾 Éditer ma facture  
+            </a>  
+        </div>  
+    </div>  
+</body>  
+</html> 
