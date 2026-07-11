@@ -3,44 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Générateur de Rétroplanning</title>
+    <title>Rétroplanning en ligne — 2€ TTC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        input[type="color"] {
-            width: 48px; height: 48px;
-            border: none; border-radius: 8px;
-            cursor: pointer; padding: 2px;
-            background: none;
-        }
-        .preview-bar {
-            height: 12px; border-radius: 6px;
-            transition: background 0.3s;
-        }
-        .color-box {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px; border: 1.5px solid #e2e8f0;
-            border-radius: 10px; background: #f8fafc;
-        }
+        .preview-bar { height: 12px; border-radius: 6px; transition: background 0.3s; }
+        .dynamic-bg { transition: background-color 0.3s; }
+        .dynamic-border { transition: border-color 0.3s; }
+        .dynamic-text { transition: color 0.3s; }
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div class="max-w-4xl mx-auto">
-
-        <!-- HEADER -->
         <header class="text-center mb-10">
             <h1 class="text-3xl font-bold text-slate-800">🗓️ RÉTROPLANNING EN LIGNE</h1>
             <p class="text-slate-600 mt-2">Créez votre document professionnel en quelques clics · <strong>{{ prix }}€ TTC</strong></p>
-            <p class="text-teal-600 text-sm mt-1 font-medium">✨ Couleurs personnalisables · Pied de page libre · PNG haute résolution</p>
         </header>
 
         <form action="/checkout" method="POST" class="space-y-6" id="mainForm">
 
             <!-- ÉVÉNEMENT -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 text-teal-700">📌 Votre événement</h2>
+                <h2 class="text-xl font-semibold mb-4 dynamic-text" id="h-event" style="color:#3F8078">📌 Votre événement</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Nom du client</label>
@@ -57,135 +43,119 @@
 
             <!-- 4 ÉTAPES -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 text-teal-700">📋 Les 4 étapes clés</h2>
+                <h2 class="text-xl font-semibold mb-4 dynamic-text" style="color:#3F8078">📋 Les 4 étapes clés</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="p-3 border rounded-lg bg-slate-50">
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 1</span>
-                        <input type="text" name="label1" placeholder="Ex : Validation commande"
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
+                        <input type="text" name="label1" placeholder="Ex : Validation commande" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
                         <input type="date" name="date1" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
                     </div>
                     <div class="p-3 border rounded-lg bg-slate-50">
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 2</span>
-                        <input type="text" name="label2" placeholder="Ex : Validation BAT"
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
+                        <input type="text" name="label2" placeholder="Ex : Validation BAT" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
                         <input type="date" name="date2" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
                     </div>
                     <div class="p-3 border rounded-lg bg-slate-50">
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 3</span>
-                        <input type="text" name="label3" placeholder="Ex : Production"
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
+                        <input type="text" name="label3" placeholder="Ex : Production" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
                         <input type="date" name="date3" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
                     </div>
                     <div class="p-3 border rounded-lg bg-slate-50">
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 4</span>
-                        <input type="text" name="label4" placeholder="Ex : Expédition"
-                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
+                        <input type="text" name="label4" placeholder="Ex : Expédition" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">
                         <input type="date" name="date4" required class="block w-full text-sm border-slate-300 rounded-md border p-1">
                     </div>
                 </div>
-                <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                    <label class="block text-sm font-bold text-teal-800">🎯 DATE DE L'ÉVÉNEMENT (Jalon final)</label>
+                <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg dynamic-border" id="event-box">
+                    <label class="block text-sm font-bold dynamic-text" style="color:#3F8078">🎯 DATE DE L'ÉVÉNEMENT (Jalon final)</label>
                     <input type="date" name="date_event" required class="mt-1 block w-full rounded-md border-teal-300 border p-2">
                 </div>
             </div>
 
-            <!-- PERSONNALISATION COULEURS -->
+            <!-- COULEURS -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-2 text-teal-700">🎨 Personnalisation des couleurs</h2>
-                <p class="text-sm text-slate-500 mb-5">Choisissez les couleurs de votre charte graphique. Par défaut : couleurs Omnipub.</p>
-
+                <h2 class="text-xl font-semibold mb-4 dynamic-text" style="color:#3F8078">🎨 Couleurs de votre charte</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Couleur principale -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Couleur principale</label>
-                        <div class="color-box">
-                            <input type="color" id="color1" name="color_main" value="#3F8078">
-                            <div class="flex-1">
-                                <input type="text" id="hex1" value="#3F8078" maxlength="7"
-                                       class="w-full text-sm border border-slate-300 rounded p-1 font-mono"
-                                       placeholder="#3F8078">
-                                <p class="text-xs text-slate-400 mt-1">Header, jalons, boutons</p>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="color1-picker" value="#3F8078" class="w-12 h-10 rounded cursor-pointer border-0">
+                            <input type="text" id="color1-hex" name="color1" value="#3F8078" maxlength="7"
+                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">
                         </div>
                     </div>
-                    <!-- Couleur secondaire -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Couleur secondaire</label>
-                        <div class="color-box">
-                            <input type="color" id="color2" name="color_alt" value="#75A097">
-                            <div class="flex-1">
-                                <input type="text" id="hex2" value="#75A097" maxlength="7"
-                                       class="w-full text-sm border border-slate-300 rounded p-1 font-mono"
-                                       placeholder="#75A097">
-                                <p class="text-xs text-slate-400 mt-1">Segments alternés de la timeline</p>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="color2-picker" value="#75A097" class="w-12 h-10 rounded cursor-pointer border-0">
+                            <input type="text" id="color2-hex" name="color2" value="#75A097" maxlength="7"
+                                   class="flex-1 border rounded-md p-2 text-sm font-mono uppercase">
                         </div>
                     </div>
                 </div>
-
-                <!-- Prévisualisation barre timeline -->
-                <div class="mt-6">
-                    <p class="text-xs font-semibold text-slate-500 uppercase mb-2">Aperçu de la timeline</p>
-                    <div class="flex rounded-full overflow-hidden h-4 w-full shadow-inner">
-                        <div id="prev1" class="flex-1 preview-bar" style="background:#3F8078; border-radius: 8px 0 0 8px;"></div>
+                <!-- Prévisualisation barre -->
+                <div class="mt-4">
+                    <p class="text-xs text-slate-500 mb-2">Aperçu de la timeline :</p>
+                    <div class="flex rounded-full overflow-hidden h-4 w-full">
+                        <div id="prev1" class="flex-1 preview-bar" style="background:#3F8078; border-radius:6px 0 0 6px;"></div>
                         <div id="prev2" class="flex-1 preview-bar" style="background:#75A097;"></div>
                         <div id="prev3" class="flex-1 preview-bar" style="background:#3F8078;"></div>
-                        <div id="prev4" class="flex-1 preview-bar" style="background:#75A097; border-radius: 0 8px 8px 0;"></div>
+                        <div id="prev4" class="flex-1 preview-bar" style="background:#75A097; border-radius:0 6px 6px 0;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- COORDONNÉES -->
+            <!-- PIED DE PAGE -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold mb-4 text-teal-700">📞 Vos coordonnées (Pied de page)</h2>
+                <h2 class="text-xl font-semibold mb-4 dynamic-text" style="color:#3F8078">📞 Pied de page</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="footer_societe" placeholder="Nom de votre société"
-                           class="block w-full rounded-md border-slate-300 border p-2">
-                    <input type="text" name="phone" placeholder="Ex : 04 99 13 63 33"
-                           class="block w-full rounded-md border-slate-300 border p-2">
-                    <input type="email" name="email" placeholder="Ex : contact@societe.fr"
-                           class="block w-full rounded-md border-slate-300 border p-2">
-                    <input type="text" name="website" placeholder="Ex : www.societe.fr"
-                           class="block w-full rounded-md border-slate-300 border p-2">
+                    <input type="text" name="footer_societe" placeholder="Nom de votre société" class="block w-full rounded-md border-slate-300 border p-2">
+                    <input type="text" name="phone" placeholder="Ex : 04 99 13 63 33" class="block w-full rounded-md border-slate-300 border p-2">
+                    <input type="email" name="email" placeholder="Ex : contact@societe.fr" class="block w-full rounded-md border-slate-300 border p-2">
+                    <input type="text" name="website" placeholder="Ex : www.societe.fr" class="block w-full rounded-md border-slate-300 border p-2">
                 </div>
             </div>
 
-            <!-- BOUTON PAIEMENT -->
-            <div class="text-center pb-8">
-                <button type="submit"
-                        class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105 text-lg">
+            <!-- BOUTON -->
+            <div class="text-center">
+                <button type="submit" id="btn-submit"
+                        class="dynamic-bg text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105"
+                        style="background-color:#3F8078">
                     💳 PAYER {{ prix }}€ ET GÉNÉRER MON PNG
                 </button>
-                <p class="text-xs text-slate-400 mt-3">🔒 Paiement sécurisé via PayPal · Téléchargement immédiat après confirmation</p>
+                <p class="text-slate-400 text-xs mt-2">🔒 Paiement sécurisé PayPal</p>
             </div>
-
         </form>
     </div>
 
-    <script>
-        // Sync color picker <-> champ HEX
-        const c1 = document.getElementById('color1');
-        const h1 = document.getElementById('hex1');
-        const c2 = document.getElementById('color2');
-        const h2 = document.getElementById('hex2');
+<script>
+const C1_DEFAULT = '#3F8078';
+const C2_DEFAULT = '#75A097';
 
-        function updatePreview() {
-            document.getElementById('prev1').style.background = c1.value;
-            document.getElementById('prev3').style.background = c1.value;
-            document.getElementById('prev2').style.background = c2.value;
-            document.getElementById('prev4').style.background = c2.value;
-        }
+function isValidHex(h) { return /^#[0-9A-Fa-f]{6}$/.test(h); }
 
-        c1.addEventListener('input', () => { h1.value = c1.value; updatePreview(); });
-        c2.addEventListener('input', () => { h2.value = c2.value; updatePreview(); });
+function applyColor1(hex) {
+    if (!isValidHex(hex)) return;
+    document.getElementById('color1-picker').value = hex;
+    document.getElementById('color1-hex').value = hex.toUpperCase();
+    document.querySelectorAll('.dynamic-text').forEach(el => el.style.color = hex);
+    document.getElementById('btn-submit').style.backgroundColor = hex;
+    document.getElementById('prev1').style.background = hex;
+    document.getElementById('prev3').style.background = hex;
+}
 
-        h1.addEventListener('input', () => {
-            if (/^#[0-9A-Fa-f]{6}$/.test(h1.value)) { c1.value = h1.value; updatePreview(); }
-        });
-        h2.addEventListener('input', () => {
-            if (/^#[0-9A-Fa-f]{6}$/.test(h2.value)) { c2.value = h2.value; updatePreview(); }
-        });
-    </script>
+function applyColor2(hex) {
+    if (!isValidHex(hex)) return;
+    document.getElementById('color2-picker').value = hex;
+    document.getElementById('color2-hex').value = hex.toUpperCase();
+    document.getElementById('prev2').style.background = hex;
+    document.getElementById('prev4').style.background = hex;
+}
+
+document.getElementById('color1-picker').addEventListener('input', e => applyColor1(e.target.value));
+document.getElementById('color1-hex').addEventListener('input', e => applyColor1(e.target.value));
+document.getElementById('color2-picker').addEventListener('input', e => applyColor2(e.target.value));
+document.getElementById('color2-hex').addEventListener('input', e => applyColor2(e.target.value));
+</script>
 </body>
 </html>
