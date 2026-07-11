@@ -1,59 +1,26 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paiement réussi !</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-lg max-w-lg w-full p-8">
-
-        <!-- En-tête succès -->
-        <div class="text-center mb-8">
-            <div class="text-6xl mb-4">✅</div>
-            <h1 class="text-2xl font-bold text-slate-800">Paiement confirmé !</h1>
-            <p class="text-slate-500 mt-2">Merci pour votre commande. Votre rétroplanning est prêt.</p>
-        </div>
-
-        <!-- Récapitulatif commande -->
-        <div class="bg-slate-50 rounded-xl p-5 mb-6 border border-slate-200">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">📋 Récapitulatif</h2>
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-slate-600">Client</span>
-                    <span class="font-semibold text-slate-800">{{ order.nom_client }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-600">Événement</span>
-                    <span class="font-semibold text-slate-800">{{ order.nom_evenement }}</span>
-                </div>
-                <div class="flex justify-between border-t border-slate-200 pt-2 mt-2">
-                    <span class="text-slate-600">Montant payé</span>
-                    <span class="font-bold text-teal-600">2,00 € TTC</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Boutons d'action -->
-        <div class="space-y-3">
-            <a href="/download/png/{{ token }}"
-               class="flex items-center justify-center gap-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-6 rounded-xl transition shadow-md text-lg">
-                📥 Télécharger mon Rétroplanning (PNG)
-            </a>
-            <a href="/facture/{{ token }}"
-               class="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-xl transition border border-slate-200">
-                🧾 Générer ma facture PDF
-            </a>
-            <a href="/"
-               class="flex items-center justify-center gap-2 w-full text-slate-400 hover:text-slate-600 text-sm py-2 transition">
-                ← Créer un nouveau rétroplanning
-            </a>
-        </div>
-
-        <p class="text-center text-xs text-slate-400 mt-6">
-            Une question ? <a href="mailto:commercial@omnipub.net" class="text-teal-600 hover:underline">commercial@omnipub.net</a>
-        </p>
-    </div>
-</body>
-</html>
+<!DOCTYPE html>  
+<html lang="fr">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Paiement réussi !</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+</head>  
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">  
+    <div class="bg-white p-8 rounded-xl shadow-md max-w-md w-full text-center">  
+        <div class="text-green-500 text-6xl mb-4">✅</div>  
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">Paiement réussi !</h1>  
+        <p class="text-slate-600 mb-8">Votre rétroplanning est prêt.</p>  
+          
+        <div class="space-y-4">  
+            <a href="/download/png/{{ token }}" class="block w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-md">  
+                📥 Télécharger mon Rétroplanning (PNG)  
+            </a>  
+            <a href="/facture/{{ token }}" class="block w-full bg-slate-200 text-slate-800 font-bold py-3 rounded-lg">  
+                🧾 Éditer ma facture  
+            </a>  
+        </div>  
+        <p class="mt-8 text-xs text-slate-400">Une question ? contactez-nous sur {{ contact_email }}</p>  
+    </div>  
+</body>  
+</html>  
