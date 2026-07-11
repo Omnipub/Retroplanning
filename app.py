@@ -14,7 +14,6 @@ import os, uuid, json
 
 app = Flask(__name__)
 
-# --- CONFIGURATION ---
 PAYPAL_EMAIL   = "commercial@omnipub.net"
 PRIX_TTC       = 2.00
 PRIX_HT        = round(PRIX_TTC / 1.20, 2)
@@ -58,14 +57,12 @@ def next_invoice_number():
     count = sum(1 for o in orders.values() if o.get('paid')) + 1
     return f"FAC-{year}-{count:04d}"
 
-# ─────────────────────────────────────────────
-# GÉNÉRATION DU PNG — avec couleurs personnalisées
-# ─────────────────────────────────────────────
-def generate_png(nom_client, nom_evenement, steps, phone, email,
-                 color_main="#3F8078", color_alt="#75A097",
-                 footer_societe="", website=""):
-    C_MAIN  = color_main
-    C_ALT   = color_alt
+def generate_png(nom_client, nom_evenement, steps,
+                 phone='', email='', footer_societe='', website='',
+                 color1='#3F8078', color2='#75A097'):
+
+    C_MAIN  = color1
+    C_ALT   = color2
     C_DARK  = "#1A1A1A"
     C_WHITE = "#FFFFFF"
 
@@ -90,61 +87,55 @@ def generate_png(nom_client, nom_evenement, steps, phone, email,
     def get_x(date):
         return 1 + 14 * ((date - start_date).days / total_days)
 
-    # Barre segmentée alternée
-    from matplotlib.patches import FancyBboxPatch as FBP
-    colors_seq = [C_MAIN, C_ALT, C_MAIN, C_ALT, C_MAIN]
+    # Barre de fond
+    ax.add_patch(FancyBboxPatch((1, 3.75), 14, 0.5,
+                 boxstyle="round,pad=0.1", color=C_MAIN, alpha=0.2))
+
+    # Segments colorés alternés
     for i in range(len(steps) - 1):
         x0 = get_x(steps[i]['date'])
         x1 = get_x(steps[i+1]['date'])
-        ax.add_patch(plt.Rectangle((x0, 3.8), x1 - x0, 0.4,
-                     color=colors_seq[i % len(colors_seq)], zorder=2))
-
-    ax.add_patch(FancyBboxPatch((1, 3.8), 14, 0.4,
-                 boxstyle="round,pad=0.05", linewidth=1.5,
-                 edgecolor=C_WHITE, facecolor="none", zorder=3))
+        col = C_MAIN if i % 2 == 0 else C_ALT
+        ax.add_patch(plt.Rectangle((x0, 3.75), x1 - x0, 0.5, color=col, zorder=2))
 
     # Jalons
     for i, step in enumerate(steps):
         x    = get_x(step['date'])
         side = "top" if i % 2 == 0 else "bottom"
-        ax.scatter(x, 4, s=200, color=C_MAIN, zorder=5)
-        y_text = 5.2 if side == "top" else 2.8
-        ax.plot([x, x], [4, y_text], color=C_MAIN, linestyle='--', alpha=0.5)
-        ax.text(x, y_text + (0.2 if side == "top" else -0.2),
+        ax.scatter(x, 4.0, s=250, color=C_WHITE, edgecolors=C_MAIN, linewidths=2.5, zorder=5)
+        ax.scatter(x, 4.0, s=100, color=C_MAIN, zorder=6)
+        y_text = 5.4 if side == "top" else 2.6
+        ax.plot([x, x], [4.25 if side=="top" else 3.75, y_text],
+                color=C_MAIN, linestyle='--', alpha=0.5, linewidth=1.2)
+        ax.text(x, y_text + (0.15 if side == "top" else -0.15),
                 step['label'], ha='center',
                 va='bottom' if side == "top" else 'top',
-                fontsize=10, fontweight='bold', color=C_DARK)
-        ax.text(x, y_text + (0.6 if side == "top" else -0.6),
+                fontsize=9, fontweight='bold', color=C_DARK)
+        ax.text(x, y_text + (0.55 if side == "top" else -0.55),
                 step['date'].strftime('%d/%m/%Y'),
-                ha='center', va='center', color=C_WHITE, fontweight='bold',
+                ha='center', va='center', color=C_WHITE, fontweight='bold', fontsize=10,
                 bbox=dict(boxstyle="round,pad=0.3", facecolor=C_MAIN, edgecolor='none'))
 
     # Footer dynamique
-    parts = []
-    if footer_societe: parts.append(footer_societe)
-    if phone:          parts.append(phone)
-    if email:          parts.append(email)
-    if website:        parts.append(website)
+    parts = [p for p in [footer_societe, phone, email, website] if p.strip()]
     footer = "  |  ".join(parts) if parts else nom_client
-    ax.text(8, 0.5, footer, ha='center', va='center',
+    ax.plot([0.5, 15.5], [0.8, 0.8], color='#CCCCCC', linewidth=0.8)
+    ax.text(8, 0.45, footer, ha='center', va='center',
             fontsize=11, color=C_DARK, fontweight='bold')
 
     filename = f"retroplanning_{nom_client.replace(' ', '_')}_{uuid.uuid4().hex[:6]}.png"
     filepath = os.path.join('/tmp', filename)
-    plt.savefig(filepath, dpi=200, bbox_inches='tight')
+    plt.savefig(filepath, dpi=200, bbox_inches='tight', facecolor='white')
     plt.close()
     return filepath
 
 
-# ─────────────────────────────────────────────
-# GÉNÉRATION FACTURE PDF
-# ─────────────────────────────────────────────
 def generate_facture(order, client_info, num_facture):
     filename = f"facture_{num_facture}.pdf"
     filepath = os.path.join('/tmp', filename)
-    doc = SimpleDocTemplate(filepath, pagesize=A4,
-                            rightMargin=2*cm, leftMargin=2*cm,
-                            topMargin=2*cm, bottomMargin=2*cm)
+    doc  = SimpleDocTemplate(filepath, pagesize=A4,
+                             rightMargin=2*cm, leftMargin=2*cm,
+                             topMargin=2*cm, bottomMargin=2*cm)
     story = []
     green = colors.HexColor('#3F8078')
     sv = ParagraphStyle('sv', fontSize=10, leading=14)
@@ -167,8 +158,8 @@ def generate_facture(order, client_info, num_facture):
     story.append(Paragraph(f"<b>{client_info.get('raison_sociale','')}</b>", sv))
     story.append(Paragraph(client_info.get('adresse',''), sv))
     story.append(Paragraph(f"{client_info.get('cp','')} {client_info.get('ville','')}", sv))
-    if client_info.get('siret'):    story.append(Paragraph(f"SIRET : {client_info['siret']}", sv))
-    if client_info.get('tva_intra'):story.append(Paragraph(f"N° TVA : {client_info['tva_intra']}", sv))
+    if client_info.get('siret'): story.append(Paragraph(f"SIRET : {client_info['siret']}", sv))
+    if client_info.get('tva_intra'): story.append(Paragraph(f"N° TVA : {client_info['tva_intra']}", sv))
     story.append(Spacer(1, 0.8*cm))
 
     data = [
@@ -178,15 +169,12 @@ def generate_facture(order, client_info, num_facture):
     ]
     table = Table(data, colWidths=[8*cm, 1.5*cm, 2.5*cm, 3*cm, 2.5*cm])
     table.setStyle(TableStyle([
-        ('BACKGROUND',    (0,0), (-1,0), green),
-        ('TEXTCOLOR',     (0,0), (-1,0), colors.white),
-        ('FONTNAME',      (0,0), (-1,0), 'Helvetica-Bold'),
-        ('FONTSIZE',      (0,0), (-1,-1), 9),
-        ('ALIGN',         (1,0), (-1,-1), 'CENTER'),
-        ('ROWBACKGROUNDS',(0,1), (-1,-1), [colors.white, colors.HexColor('#F0F7F6')]),
-        ('GRID',          (0,0), (-1,-1), 0.5, colors.HexColor('#CCCCCC')),
-        ('TOPPADDING',    (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('BACKGROUND',(0,0),(-1,0),green), ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'), ('FONTSIZE',(0,0),(-1,-1),9),
+        ('ALIGN',(1,0),(-1,-1),'CENTER'),
+        ('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#F0F7F6')]),
+        ('GRID',(0,0),(-1,-1),0.5,colors.HexColor('#CCCCCC')),
+        ('TOPPADDING',(0,0),(-1,-1),6), ('BOTTOMPADDING',(0,0),(-1,-1),6),
     ]))
     story.append(table)
     story.append(Spacer(1, 0.5*cm))
@@ -215,9 +203,6 @@ def get_steps_from_form(form):
     return steps
 
 
-# ─────────────────────────────────────────────
-# ROUTES PUBLIQUES
-# ─────────────────────────────────────────────
 @app.route('/')
 def index():
     return render_template('index.html', prix=f"{PRIX_TTC:.2f}", paypal_email=PAYPAL_EMAIL)
@@ -235,8 +220,8 @@ def checkout():
         'email':          request.form.get('email', ''),
         'footer_societe': request.form.get('footer_societe', ''),
         'website':        request.form.get('website', ''),
-        'color_main':     request.form.get('color_main', '#3F8078'),
-        'color_alt':      request.form.get('color_alt', '#75A097'),
+        'color1':         request.form.get('color1', '#3F8078'),
+        'color2':         request.form.get('color2', '#75A097'),
         'steps_raw':      [(request.form.get(f'label{i}'), request.form.get(f'date{i}')) for i in range(1, 5)],
         'date_event':     request.form.get('date_event', ''),
     }
@@ -263,7 +248,6 @@ def success():
     order = get_order(token)
     if not order:
         return "Commande introuvable.", 404
-
     if not order.get('paid'):
         order['paid'] = True
         save_order(token, order)
@@ -278,13 +262,12 @@ def success():
 
     png_path = generate_png(
         order['nom_client'], order['nom_evenement'], steps,
-        order.get('phone', ''), order.get('email', ''),
-        order.get('color_main', '#3F8078'), order.get('color_alt', '#75A097'),
-        order.get('footer_societe', ''), order.get('website', '')
+        order.get('phone',''), order.get('email',''),
+        order.get('footer_societe',''), order.get('website',''),
+        order.get('color1','#3F8078'), order.get('color2','#75A097')
     )
     order['png_path'] = png_path
     save_order(token, order)
-
     return render_template('success.html', token=token, order=order)
 
 
@@ -304,14 +287,14 @@ def facture(token):
         return "Accès non autorisé.", 403
     if request.method == 'POST':
         client_info = {
-            'raison_sociale': request.form.get('raison_sociale', ''),
-            'adresse':        request.form.get('adresse', ''),
-            'cp':             request.form.get('cp', ''),
-            'ville':          request.form.get('ville', ''),
-            'siret':          request.form.get('siret', ''),
-            'tva_intra':      request.form.get('tva_intra', ''),
+            'raison_sociale': request.form.get('raison_sociale',''),
+            'adresse':        request.form.get('adresse',''),
+            'cp':             request.form.get('cp',''),
+            'ville':          request.form.get('ville',''),
+            'siret':          request.form.get('siret',''),
+            'tva_intra':      request.form.get('tva_intra',''),
         }
-        num      = next_invoice_number()
+        num = next_invoice_number()
         pdf_path = generate_facture(order, client_info, num)
         return send_file(pdf_path, as_attachment=True, download_name=f"facture_{num}.pdf")
     return render_template('facture.html', token=token, order=order)
@@ -322,14 +305,11 @@ def cancel():
     return render_template('cancel.html')
 
 
-# ─────────────────────────────────────────────
-# ROUTES ADMIN
-# ─────────────────────────────────────────────
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_login():
     error = None
     if request.method == 'POST':
-        if request.form.get('password', '') == ADMIN_PASSWORD:
+        if request.form.get('password','') == ADMIN_PASSWORD:
             session['admin'] = True
             return redirect('/admin/generate')
         error = "Mot de passe incorrect."
@@ -341,17 +321,17 @@ def admin_generate():
     if not session.get('admin'):
         return redirect('/admin')
     if request.method == 'POST':
-        steps    = get_steps_from_form(request.form)
+        steps = get_steps_from_form(request.form)
         filepath = generate_png(
-            request.form.get('client', 'CLIENT'),
-            request.form.get('evenement', 'EVENEMENT'),
+            request.form.get('client','CLIENT'),
+            request.form.get('evenement','EVENEMENT'),
             steps,
-            request.form.get('phone', ''),
-            request.form.get('email', ''),
-            request.form.get('color_main', '#3F8078'),
-            request.form.get('color_alt', '#75A097'),
-            request.form.get('footer_societe', ''),
-            request.form.get('website', '')
+            request.form.get('phone',''),
+            request.form.get('email',''),
+            request.form.get('footer_societe',''),
+            request.form.get('website',''),
+            request.form.get('color1','#3F8078'),
+            request.form.get('color2','#75A097'),
         )
         return send_file(filepath, as_attachment=True)
     return render_template('admin_generate.html')
