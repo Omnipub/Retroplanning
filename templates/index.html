@@ -24,42 +24,74 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
                     <div>  
                         <label class="block text-sm font-medium text-slate-700">Nom du client</label>  
-                        <input type="text" name="client" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">  
+                        <input type="text" name="client" required placeholder="Ex : Mairie de Lyon"  
+                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">  
                     </div>  
                     <div>  
                         <label class="block text-sm font-medium text-slate-700">Nom de l'événement</label>  
-                        <input type="text" name="evenement" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">  
+                        <input type="text" name="evenement" required placeholder="Ex : Salon du Marketing 2026"  
+                               class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">  
                     </div>  
                 </div>  
             </div>
 
             <div class="card p-6">  
                 <h2 class="text-xl font-semibold mb-4 text-teal-700">📋 Les 4 étapes clés</h2>  
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">  
-                    {% for i in range(1, 5) %}  
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
                     <div class="p-3 border rounded-lg bg-slate-50">  
-                        <span class="text-xs font-bold text-slate-400 uppercase">Étape {{ i }}</span>  
-                        <input type="text" name="label{{ i }}" placeholder="Libellé libre" class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
-                        <input type="date" name="date{{ i }}" required class="block w-full text-sm border-slate-300 rounded-md border p-1">  
-                    </div>  
-                    {% endfor %}  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 1</span>  
+                        <input type="text" name="label1" placeholder="Ex : Validation commande"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date1" required  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
+                    </div>
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 2</span>  
+                        <input type="text" name="label2" placeholder="Ex : Validation BAT"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date2" required  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
+                    </div>
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 3</span>  
+                        <input type="text" name="label3" placeholder="Ex : Production"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date3" required  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
+                    </div>
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 4</span>  
+                        <input type="text" name="label4" placeholder="Ex : Expédition"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date4" required  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
+                    </div>
+
                 </div>  
                 <div class="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">  
                     <label class="block text-sm font-bold text-teal-800">🎯 DATE DE L'ÉVÉNEMENT (Jalon final)</label>  
-                    <input type="date" name="date_event" required class="mt-1 block w-full rounded-md border-teal-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 border p-2">  
+                    <input type="date" name="date_event" required  
+                           class="mt-1 block w-full rounded-md border-teal-300 border p-2">  
                 </div>  
             </div>
 
             <div class="card p-6">  
                 <h2 class="text-xl font-semibold mb-4 text-teal-700">📞 Vos coordonnées (Pied de page)</h2>  
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
-                    <input type="text" name="phone" placeholder="Téléphone" class="block w-full rounded-md border-slate-300 border p-2">  
-                    <input type="email" name="email" placeholder="Email" class="block w-full rounded-md border-slate-300 border p-2">  
+                    <input type="text" name="phone" placeholder="Ex : 04 99 13 63 33"  
+                           class="block w-full rounded-md border-slate-300 border p-2">  
+                    <input type="email" name="email" placeholder="Ex : contact@societe.fr"  
+                           class="block w-full rounded-md border-slate-300 border p-2">  
                 </div>  
             </div>
 
             <div class="text-center">  
-                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105">  
+                <button type="submit"  
+                        class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105">  
                     💳 PAYER {{ prix }}€ ET GÉNÉRER MON PNG  
                 </button>  
             </div>  
