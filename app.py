@@ -376,3 +376,37 @@ def admin_logout():
 
 if __name__ == '__main__':  
     app.run(debug=True)
+
+# ─────────────────────────────────────────────
+# ROUTES SEO (Robots.txt & Sitemap.xml)
+# ─────────────────────────────────────────────  
+@app.route('/robots.txt')  
+def robots():  
+    content = """User-agent: *  
+Disallow: /admin  
+Disallow: /checkout  
+Disallow: /success  
+Disallow: /facture  
+Disallow: /download
+
+Sitemap: https://www.retroplanning.eu/sitemap.xml  
+"""  
+    return app.response_class(content, mimetype='text/plain')
+
+@app.route('/sitemap.xml')  
+def sitemap():  
+    content = """<?xml version="1.0" encoding="UTF-8"?>  
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">  
+  <url>  
+    <loc>https://www.retroplanning.eu/</loc>  
+    <changefreq>weekly</changefreq>  
+    <priority>1.0</priority>  
+  </url>  
+  <url>  
+    <loc>https://www.retroplanning.eu/formulaire</loc>  
+    <changefreq>monthly</changefreq>  
+    <priority>0.8</priority>  
+  </url>  
+</urlset>  
+"""  
+    return app.response_class(content, mimetype='application/xml')  
