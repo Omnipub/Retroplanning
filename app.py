@@ -1,199 +1,99 @@
-from flask import Flask, render_template, request, jsonify, send_file, after_this_request
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Polygon
-from datetime import datetime
-import io, os, uuid
+from flask import Flask, render_template, request, send_file, redirect  
+import matplotlib  
+matplotlib.use('Agg')  
+import matplotlib.pyplot as plt  
+from matplotlib.patches import FancyBboxPatch, Polygon  
+from datetime import datetime  
+import os
 
 app = Flask(__name__)
 
-PAYPAL_EMAIL    = "commercial@omnipub.net"
-PRIX_TTC        = "2.00"
-EMAIL_RECEPTION = "commercial@omnipub.net"
-SITE_URL        = "https://www.retroplanning.eu"
-app.secret_key  = str(uuid.uuid4())
+# --- CONFIGURATION ---  
+PAYPAL_EMAIL = "commercial@omnipub.net"   
+PRIX_TTC = "5.00"  
+SITE_URL = "https://www.retroplanning.eu"
 
-C_MAIN  = "#3F8078"
-C_ALT   = "#75A097"
-C_WHITE = "#FFFFFF"
-C_DARK  = "#1A1A1A"
+@app.route('/')  
+def index():  
+    return render_template('index.html', prix=PRIX_TTC, paypal_email=PAYPAL_EMAIL)
 
-def generate_retroplanning(nom_client, nom_evenement, milestones_data,
-                            footer_societe, footer_tel, footer_email, footer_web):
-    date_debut = milestones_data[0]["date"]
-    date_fin   = milestones_data[-1]["date"]
-    total_days = (date_fin - date_debut).days
-    if total_days <= 0:
-        raise ValueError("La derniere date doit etre posterieure a la premiere.")
+@app.route('/generate', methods=['POST'])  
+def generate():  
+    nom_client = request.form.get('client', 'CLIENT')  
+    nom_evenement = request.form.get('evenement', 'EVENEMENT')  
+      
+    # Récupération des 4 étapes  
+    steps = []  
+    for i in range(1, 5):  
+        label = request.form.get(f'label{i}')  
+        date_str = request.form.get(f'date{i}')  
+        if label and date_str:  
+            steps.append({'label': label, 'date': datetime.strptime(date_str, '%Y-%m-%d')})  
+      
+    date_evenement = datetime.strptime(request.form.get('date_event'), '%Y-%m-%d')  
+    steps.append({'label': 'ÉVÉNEMENT', 'date': date_evenement})  
+      
+    # Tri par date  
+    steps.sort(key=lambda x: x['date'])  
+      
+    # Couleurs Omnipub  
+    C_MAIN = "#3F8078"  
+    C_ALT = "#75A097"  
+    C_DARK = "#1A1A1A"  
+    C_WHITE = "#FFFFFF"
 
-    def date_to_x(d):
-        return (d - date_debut).days / total_days
+    fig = plt.figure(figsize=(16, 8))  
+    ax = fig.add_axes([0, 0, 1, 1])  
+    ax.set_xlim(0, 16)  
+    ax.set_ylim(0, 8)  
+    ax.axis('off')
 
-    FIG_W = 16.0; FIG_H = 6.8
-    fig = plt.figure(figsize=(FIG_W, FIG_H))
-    fig.patch.set_alpha(0)
-    ax = fig.add_axes([0.03, 0.06, 0.94, 0.76])
-    ax.set_facecolor('none')
-    ax.set_xlim(0, FIG_W); ax.set_ylim(0, FIG_H)
-    ax.set_aspect('equal'); ax.axis('off')
+    # Header  
+    ax.add_patch(plt.Rectangle((0, 6.5), 16, 1.5, color=C_MAIN))  
+    ax.text(8, 7.5, "RETROPLANNING DE PRODUCTION", ha='center', va='center', fontsize=20, color=C_WHITE, fontweight='bold')  
+    ax.text(8, 7.0, f"{nom_evenement} | {nom_client}", ha='center', va='center', fontsize=14, color=C_WHITE)
 
-    def rx(r): return r * FIG_W
-    def ry(r): return r * FIG_H
-    def x_pos(d): return rx(0.03 + 0.94 * date_to_x(d))
+    # Timeline logic  
+    start_date = steps[0]['date']  
+    end_date = steps[-1]['date']  
+    total_days = (end_date - start_date).days if (end_date - start_date).days > 0 else 1  
+      
+    def get_x(date):  
+        return 1 + 14 * ((date - start_date).days / total_days)
 
-    Y_HEADER_BOT = ry(0.76); Y_HEADER_TOP = ry(1.00)
-    Y_TRACK_CY = ry(0.44); TRACK_H = ry(0.13)
-    TRACK_X0 = rx(0.03); TRACK_X1 = rx(0.97)
+    # Dessin de la barre  
+    ax.add_patch(FancyBboxPatch((1, 3.8), 14, 0.4, boxstyle="round,pad=0.1", color=C_MAIN, alpha=0.3))
 
-    # HEADER
-    ax.add_patch(FancyBboxPatch((rx(0.0), Y_HEADER_BOT), rx(1.0), Y_HEADER_TOP-Y_HEADER_BOT,
-        boxstyle="square,pad=0", linewidth=0, facecolor=C_MAIN, zorder=1))
-    ax.add_patch(FancyBboxPatch((rx(0.0), Y_HEADER_BOT), rx(0.006), Y_HEADER_TOP-Y_HEADER_BOT,
-        boxstyle="square,pad=0", linewidth=0, facecolor="#2A5550", zorder=2))
-    ax.plot([rx(0.0), rx(1.0)], [Y_HEADER_BOT]*2, color="#2A5550", linewidth=2, zorder=3)
-    ax.text(rx(0.5), ry(0.955), "RETROPLANNING DE PRODUCTION",
-            ha='center', va='center', fontsize=18, fontweight='bold', color=C_WHITE, zorder=4)
-    ax.text(rx(0.5), ry(0.885),
-            "Ce retroplanning est fourni a titre indicatif. Les dates ne sont pas contractuelles.",
-            ha='center', va='center', fontsize=11, style='italic', color=C_WHITE, zorder=4)
-    ax.text(rx(0.5), ry(0.815), f"{nom_evenement}   |   {nom_client}",
-            ha='center', va='center', fontsize=12, fontweight='bold', color=C_WHITE, zorder=4)
+    # Jalons avec correction d'espacement  
+    for i, step in enumerate(steps):  
+        x = get_x(step['date'])  
+        side = "top" if i % 2 == 0 else "bottom"  
+          
+        # Point sur la ligne  
+        ax.scatter(x, 4, s=200, color=C_MAIN, zorder=5)  
+          
+        # Ligne et texte  
+        y_text = 5.2 if side == "top" else 2.8  
+        ax.plot([x, x], [4, y_text], color=C_MAIN, linestyle='--', alpha=0.5)  
+          
+        ax.text(x, y_text + (0.2 if side == "top" else -0.2), step['label'],   
+                ha='center', va='bottom' if side == "top" else 'top',   
+                fontsize=10, fontweight='bold', color=C_DARK)  
+          
+        ax.text(x, y_text + (0.6 if side == "top" else -0.6), step['date'].strftime('%d/%m/%Y'),  
+                ha='center', va='center', color=C_WHITE, fontweight='bold',  
+                bbox=dict(boxstyle="round,pad=0.3", facecolor=C_MAIN, edgecolor='none'))
 
-    # TIMELINE
-    colors = [C_MAIN, C_ALT, C_MAIN, C_ALT]
-    ax.add_patch(FancyBboxPatch((TRACK_X0, Y_TRACK_CY-TRACK_H/2), TRACK_X1-TRACK_X0, TRACK_H,
-        boxstyle="round,pad=0", linewidth=0, facecolor=C_MAIN, zorder=2))
-    for i in range(len(milestones_data)-1):
-        x0 = x_pos(milestones_data[i]["date"])
-        x1 = x_pos(milestones_data[i+1]["date"])
-        ax.add_patch(plt.Rectangle((x0, Y_TRACK_CY-TRACK_H/2), x1-x0, TRACK_H,
-            linewidth=0, facecolor=colors[i % len(colors)], zorder=3))
-    ax.add_patch(FancyBboxPatch((TRACK_X0, Y_TRACK_CY-TRACK_H/2), TRACK_X1-TRACK_X0, TRACK_H,
-        boxstyle="round,pad=0", linewidth=1.5, edgecolor=C_WHITE, facecolor="none", zorder=5))
+    # Footer  
+    ax.text(8, 0.5, f"{nom_client} | {request.form.get('phone', '')} | {request.form.get('email', '')}",   
+            ha='center', va='center', fontsize=12, color=C_DARK, fontweight='bold')
 
-    # JALONS — espacement minimum garanti
-    DW = ry(0.072); DH = ry(0.042)
-    GAP_LINE = ry(0.008); LINE_LEN = ry(0.065)
-    GAP_LABEL = ry(0.012); GAP_DATE = ry(0.010)
-    MIN_GAP = rx(0.13)
+    filename = f"retroplanning_{nom_client}.png"  
+    filepath = os.path.join('/tmp', filename)  
+    plt.savefig(filepath, dpi=200, bbox_inches='tight')  
+    plt.close()  
+      
+    return send_file(filepath, as_attachment=True)
 
-    raw_positions = [x_pos(m["date"]) for m in milestones_data]
-    adj = list(raw_positions)
-    for i in range(1, len(adj)):
-        if adj[i] - adj[i-1] < MIN_GAP:
-            adj[i] = adj[i-1] + MIN_GAP
-    if adj[-1] > TRACK_X1:
-        span = adj[-1] - adj[0]
-        avail = TRACK_X1 - adj[0]
-        for i in range(1, len(adj)):
-            adj[i] = adj[0] + (adj[i] - adj[0]) * avail / span
-
-    sides = ["bottom", "top", "bottom", "top"]
-    for i, m in enumerate(milestones_data):
-        x = adj[i]; cy = Y_TRACK_CY
-        side = sides[i % len(sides)]
-        ax.add_patch(Polygon([[x-DW,cy],[x,cy+DH],[x+DW,cy],[x,cy-DH]],
-            closed=True, facecolor=C_WHITE, edgecolor=C_MAIN, linewidth=2.5, zorder=6))
-        ax.add_patch(Polygon([[x-DW*.55,cy],[x,cy+DH*.55],[x+DW*.55,cy],[x,cy-DH*.55]],
-            closed=True, facecolor=C_MAIN, edgecolor="none", linewidth=0, zorder=7))
-        if side == "top":
-            y0=cy+DH+GAP_LINE; y1=y0+LINE_LEN; yl=y1+GAP_LABEL; yd=yl+ry(0.075)+GAP_DATE
-            vl='bottom'; vd='bottom'
-        else:
-            y0=cy-DH-GAP_LINE; y1=y0-LINE_LEN; yl=y1-GAP_LABEL; yd=yl-ry(0.075)-GAP_DATE
-            vl='top'; vd='top'
-        ax.plot([x,x],[y0,y1], color=C_MAIN, linewidth=1.6, linestyle='--', zorder=5, alpha=0.55)
-        ax.text(x, yl, m["label"].upper(), ha='center', va=vl, fontsize=9,
-                fontweight='bold', color=C_DARK, multialignment='center', zorder=8)
-        ax.text(x, yd, m["date"].strftime("%d %b %Y"), ha='center', va=vd,
-                fontsize=11, color=C_WHITE, fontweight='bold',
-                bbox=dict(boxstyle="round,pad=0.35", facecolor=C_MAIN, edgecolor="none", alpha=1.0), zorder=8)
-
-    # FOOTER
-    ax.plot([rx(0.0),rx(1.0)],[ry(0.09),ry(0.09)], color="#C0B8A8", linewidth=1, zorder=1)
-    parts = [p for p in [footer_societe, footer_tel, footer_email, footer_web] if p and p.strip()]
-    ax.text(rx(0.5), ry(0.055), "  |  ".join(parts),
-            ha='center', va='center', fontsize=11, color=C_DARK, fontweight='bold')
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', dpi=200, bbox_inches='tight', transparent=True)
-    plt.close(); buf.seek(0)
-    return buf
-
-
-def parse_milestones(data):
-    sides = ["bottom","top","bottom","top"]
-    milestones = []
-    for i in range(1, 5):
-        label = data.get(f'step{i}_label','').strip()
-        date_str = data.get(f'step{i}_date','').strip()
-        if label and date_str:
-            milestones.append({"label": label,
-                                "date": datetime.strptime(date_str, '%Y-%m-%d'),
-                                "side": sides[i-1]})
-    return milestones
-
-
-@app.route('/')
-def index():
-    return render_template('index.html', prix=PRIX_TTC)
-
-@app.route('/preview', methods=['POST'])
-def preview():
-    try:
-        data = request.json
-        milestones = parse_milestones(data)
-        if len(milestones) < 2:
-            return jsonify({'success':False,'error':'Renseignez au moins 2 etapes.'}), 400
-        buf = generate_retroplanning(data.get('nom_client',''), data.get('nom_evenement',''),
-            milestones, data.get('footer_societe',''), data.get('footer_tel',''),
-            data.get('footer_email',''), data.get('footer_web',''))
-        import base64
-        return jsonify({'success':True,'image':base64.b64encode(buf.read()).decode()})
-    except Exception as e:
-        return jsonify({'success':False,'error':str(e)}), 400
-
-@app.route('/generate', methods=['POST'])
-def generate():
-    try:
-        data = request.json
-        milestones = parse_milestones(data)
-        buf = generate_retroplanning(data.get('nom_client',''), data.get('nom_evenement',''),
-            milestones, data.get('footer_societe',''), data.get('footer_tel',''),
-            data.get('footer_email',''), data.get('footer_web',''))
-        token = uuid.uuid4().hex[:16]
-        with open(f'/tmp/retro_{token}.png','wb') as f: f.write(buf.read())
-        import urllib.parse
-        params = urllib.parse.urlencode({
-            'cmd':'_xclick','business':PAYPAL_EMAIL,
-            'item_name':f"Retroplanning {data.get('nom_evenement','')}",
-            'amount':PRIX_TTC,'currency_code':'EUR',
-            'return':f"{SITE_URL}/paypal/success?token={token}",
-            'cancel_return':f"{SITE_URL}/paypal/cancel",'no_shipping':'1'})
-        return jsonify({'success':True,'token':token,
-                        'paypal_url':f"https://www.paypal.com/cgi-bin/webscr?{params}"})
-    except Exception as e:
-        return jsonify({'success':False,'error':str(e)}), 400
-
-@app.route('/download/<token>')
-def download(token):
-    fp = f'/tmp/retro_{token}.png'
-    if not os.path.exists(fp): return "Lien expire.", 404
-    @after_this_request
-    def rm(r):
-        try: os.remove(fp)
-        except: pass
-        return r
-    return send_file(fp, mimetype='image/png', as_attachment=True, download_name='retroplanning.png')
-
-@app.route('/paypal/success')
-def paypal_success():
-    return render_template('success.html', token=request.args.get('token',''))
-
-@app.route('/paypal/cancel')
-def paypal_cancel():
-    return render_template('cancel.html')
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+if __name__ == '__main__':  
+    app.run(debug=True)  
