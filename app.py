@@ -15,14 +15,21 @@ import os, uuid, json
 app = Flask(__name__)
 
 # --- CONFIGURATION ---  
-PAYPAL_EMAIL    = "commercial@omnipub.net"    # PayPal — ne pas modifier  
-CONTACT_EMAIL   = "contact@retroplanning.eu"  # Affiché sur le site  
+PAYPAL_EMAIL    = "commercial@omnipub.net"  
+CONTACT_EMAIL   = "contact@retroplanning.eu"  
 PRIX_TTC        = 2.00  
 PRIX_HT         = round(PRIX_TTC / 1.20, 2)  
 TVA             = round(PRIX_TTC - PRIX_HT, 2)  
 SITE_URL        = "https://www.retroplanning.eu"  
 ADMIN_PASSWORD  = "Omnipub&2026"  
 app.secret_key  = "retroplanning_secret_key_2026"
+
+# --- GOOGLE ANALYTICS ---  
+GA_ID = "G-NW27CME5X7"
+
+@app.context_processor  
+def inject_ga():  
+    return dict(ga_id=GA_ID)
 
 VENDEUR = {  
     "nom":     "OMNIPUB",  
@@ -217,16 +224,12 @@ def generate_facture(order, client_info, num_facture):
 
 @app.route('/')  
 def landing():  
-    """Page d'accueil — landing page de présentation."""  
     return render_template('landing.html', contact_email=CONTACT_EMAIL)
-
 
 @app.route('/formulaire')  
 def index():  
-    """Page formulaire de création du rétroplanning."""  
     return render_template('index.html', prix=f"{PRIX_TTC:.2f}",  
                            contact_email=CONTACT_EMAIL)
-
 
 @app.route('/checkout', methods=['POST'])  
 def checkout():  
@@ -268,7 +271,6 @@ def checkout():
     })  
     return redirect(f"https://www.paypal.com/cgi-bin/webscr?{params}")
 
-
 @app.route('/success', methods=['GET', 'POST'])  
 def success():  
     token = request.args.get('token', '')  
@@ -306,7 +308,6 @@ def success():
     return render_template('success.html', token=token, order=order,  
                            contact_email=CONTACT_EMAIL)
 
-
 @app.route('/download/png/<token>')  
 def download_png(token):  
     order = get_order(token)  
@@ -314,7 +315,6 @@ def download_png(token):
         return "Accès non autorisé.", 403  
     return send_file(order['png_path'], as_attachment=True,  
                      download_name=f"retroplanning_{order['nom_client'].replace(' ','_')}.png")
-
 
 @app.route('/facture/<token>', methods=['GET', 'POST'])  
 def facture(token):  
@@ -331,11 +331,9 @@ def facture(token):
     return render_template('facture.html', token=token, order=order,  
                            contact_email=CONTACT_EMAIL)
 
-
 @app.route('/cancel')  
 def cancel():  
     return render_template('cancel.html', contact_email=CONTACT_EMAIL)
-
 
 @app.route('/admin', methods=['GET', 'POST'])  
 def admin_login():  
@@ -346,7 +344,6 @@ def admin_login():
             return redirect('/admin/generate')  
         error = "Mot de passe incorrect."  
     return render_template('admin_login.html', error=error)
-
 
 @app.route('/admin/generate', methods=['GET', 'POST'])  
 def admin_generate():  
@@ -367,19 +364,11 @@ def admin_generate():
         return send_file(filepath, as_attachment=True)  
     return render_template('admin_generate.html')
 
-
 @app.route('/admin/logout')  
 def admin_logout():  
     session.pop('admin', None)  
     return redirect('/')
 
-
-if __name__ == '__main__':  
-    app.run(debug=True)
-
-# ─────────────────────────────────────────────
-# ROUTES SEO (Robots.txt & Sitemap.xml)
-# ─────────────────────────────────────────────  
 @app.route('/robots.txt')  
 def robots():  
     content = """User-agent: *  
@@ -409,4 +398,7 @@ def sitemap():
   </url>  
 </urlset>  
 """  
-    return app.response_class(content, mimetype='application/xml')  
+    return app.response_class(content, mimetype='application/xml')
+
+if __name__ == '__main__':  
+    app.run(debug=True) 
