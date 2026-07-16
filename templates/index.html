@@ -23,11 +23,21 @@
 </head>  
 <body class="p-4 md:p-8">  
     <div class="max-w-4xl mx-auto">  
-        <header class="text-center mb-10">  
-            <h1 class="text-3xl font-bold text-slate-800">🗓️ RÉTROPLANNING EN LIGNE</h1>  
-            <p class="text-slate-600 mt-2">Créez votre document professionnel en quelques clics · <strong>{{ prix }}€ TTC</strong></p>  
-        </header>
+<header class="relative text-center mb-10">  
+    <a href="/"  
+       class="inline-flex items-center gap-2 absolute left-0 top-0 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-full transition">  
+        ← Accueil  
+    </a>
 
+    <h1 class="text-3xl font-bold text-slate-800">  
+        🗓️ RÉTROPLANNING EN LIGNE  
+    </h1>
+
+    <p class="text-slate-600 mt-2">  
+        Créez votre document professionnel en quelques clics ·  
+        <strong>{{ prix }}€ TTC</strong>  
+    </p>  
+</header>
         <form action="/checkout" method="POST" class="space-y-6">
 
             <!-- ÉVÉNEMENT -->  
