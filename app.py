@@ -53,36 +53,36 @@ VENDEUR = {
 
 HOME_FAQS = [
     {
-        "question": "Comment faire un retroplanning evenementiel efficace ?",
-        "answer": "Un bon retroplanning part de la date de evenement et remonte le temps. Definissez les jalons cles afin de visualiser les dates limites."
+        "question": "Comment faire un rétroplanning événementiel efficace ?",
+        "answer": "Un bon rétroplanning part de la date de l'événement et remonte le temps. Définissez les jalons clés afin de visualiser les dates limites."
     },
     {
-        "question": "Qu est ce qu un retroplanning ?",
-        "answer": "Un retroplanning est une methode de planification qui part de la date finale du projet pour identifier les etapes necessaires."
+        "question": "Qu'est-ce qu'un rétroplanning ?",
+        "answer": "Un rétroplanning est une méthode de planification qui part de la date finale du projet pour identifier les étapes nécessaires."
     },
     {
-        "question": "A qui adresse le generateur de retroplanning ?",
-        "answer": "Il est concu pour les agences, organisateurs evenements, imprimeurs et chefs de projet."
+        "question": "À qui s'adresse le générateur de rétroplanning ?",
+        "answer": "Il est conçu pour les agences, organisateurs d'événements, imprimeurs et chefs de projet."
     },
     {
-        "question": "Combien de jalons puis je ajouter ?",
-        "answer": "Le generateur permet de renseigner jusqu a quatre etapes cles avant la date finale."
+        "question": "Combien de jalons puis-je ajouter ?",
+        "answer": "Le générateur permet de renseigner jusqu'à quatre étapes clés avant la date finale."
     },
     {
-        "question": "Puis je modifier les couleurs du graphique ?",
+        "question": "Puis-je modifier les couleurs du graphique ?",
         "answer": "Oui. Vous choisissez une couleur principale et une couleur secondaire."
     },
     {
-        "question": "Puis je utiliser le retroplanning pour un autre projet ?",
+        "question": "Puis-je utiliser le rétroplanning pour un autre projet ?",
         "answer": "Oui. Il convient aussi aux projets de production, impression, lancement et logistique."
     },
     {
-        "question": "Le fichier est il modifiable apres telechargement ?",
-        "answer": "Le telechargement est un PNG HD pret a integrer dans vos documents. Les donnees sont modifiables avant export."
+        "question": "Le fichier est-il modifiable après téléchargement ?",
+        "answer": "Le téléchargement est un PNG HD prêt à intégrer dans vos documents. Les données sont modifiables avant export."
     },
     {
-        "question": "Vais je recevoir une facture ?",
-        "answer": "Oui. Apres paiement, vous pouvez generer une facture PDF pour votre entreprise."
+        "question": "Vais-je recevoir une facture ?",
+        "answer": "Oui. Après paiement, vous pouvez générer une facture PDF pour votre entreprise."
     }
 ]
 
@@ -234,7 +234,7 @@ def get_steps_from_form(form):
     if event_date:
         try:
             steps.append({
-                "label": "EVENEMENT",
+                "label": "ÉVÉNEMENT",
                 "date": datetime.strptime(event_date, "%Y-%m-%d")
             })
         except ValueError:
@@ -410,7 +410,7 @@ def success():
 
     if order.get("date_event"):
         try:
-            steps.append({"label": "EVENEMENT", "date": datetime.strptime(order["date_event"], "%Y-%m-%d")})
+            steps.append({"label": "ÉVÉNEMENT", "date": datetime.strptime(order["date_event"], "%Y-%m-%d")})
         except ValueError:
             pass
 
@@ -510,10 +510,10 @@ def admin_generate():
     if request.method == "POST":
         steps = get_steps_from_form(request.form)
         if len(steps) < 2:
-            return "Il faut au moins une etape et la date evenement.", 400
+            return "Il faut au moins une étape et la date événement.", 400
         file_path = generate_png(
             request.form.get("client", "CLIENT"),
-            request.form.get("evenement", "EVENEMENT"),
+            request.form.get("evenement", "ÉVÉNEMENT"),
             steps,
             request.form.get("phone", ""),
             request.form.get("email", ""),
