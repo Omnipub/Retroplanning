@@ -1,186 +1,284 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    {% if ga_id %}
-    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=ILSvLuCkMHnMUwf5Ei7yi75z5TbCrN0CHYHMxObzorVhUHAfUgY-G6-2vd1DGPbow5H4exH2SQ-JGctQajhTC2WwZWCasy_XU-rXtb9Y13AqDsFlDV3fHMtgfV5cP-ay-ta3a8Q--3f-0d2uuLIqY39PhJgyi8Rc8QZHUm0HLrivaPsHiQAxCJ11-uN7b3T9t5p4QoEtj9Et7Nj9NE___CXa-P16WVDCNJqiDuo9MDhsGLlUeu3EuLJ0i9EI04_wAgyUBf6wHOMhy6lpQGDvd2l_j9PqnYCs-9qC5nEid8w1a7J12fD4wOQ6jusIj79xNy4YXBrbs4-mlBq5rGGDIq2YDyZSUASEn0kQU4cZORNbmU4xfZZPGHBYfrbPx6FPsZPB2Bm5rSbe8nGcnz4Zd_Wv_IuZ0RywsIzeKQSQG5AowIhTc_EokIY7kO2QPeg1kQGFMnmIyb71DZm9ksb4KZ1uXU7JY4BU3nIcMP1_H-teO7tds3YC8_yJZnVBvjcEHXp_6zEg4PdTkGlWSpt7sx8MfYgOOcYc-pV33ZL-p-1SjClsJ5HiirCr4fec5FcfoY6vCM3lYR4TE27aMH4dX3WyYpiBQMxZ6zhSEW8YW0i_gabOaBXVscgPrSq0r3o3fni__KRQq04chekob2piAMRCfrInTtMFK83aTnnpoFzC1zgZJZTDEURDscGfiotv_l-vRjfteshHrHIlOgSClWoquSO2e7QNx8Cvn4d7IAxTg6YmLKuzTW7ylpRHidWprNzDoz1no41EGdcJGmKWoKTO3Fng9210X9RNhPmdN8E" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9uZXcubGltb3ZhLmFpL2FwaS9wcm94eS1zMy1kb3dubG9hZD91cmw9aHR0cHMlM2ElMmYlMmZsaW1vdmEtYnVja2V0LXYyLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tJTJmZ2VuZXJhdGVkLWltYWdlcyUyZjU3ZTJmYTA0LWU3NDMtNDdiYS05YTVjLWVkNTQzNzdhZjg3Yi5wbmclM2ZYLUFtei1BbGdvcml0aG0lM2RBV1M0LUhNQUMtU0hBMjU2JTI2WC1BbXotQ29udGVudC1TaGEyNTYlM2RVTlNJR05FRC1QQVlMT0FEJTI2WC1BbXotQ3JlZGVudGlhbCUzZEFLSUFZRjMzSUNONTRWREtWT0U2JTI1MkYyMDI2MDcxOSUyNTJGZXUtY2VudHJhbC0xJTI1MkZzMyUyNTJGYXdzNF9yZXF1ZXN0JTI2WC1BbXotRGF0ZSUzZDIwMjYwNzE5VDE1MjQxNlolMjZYLUFtei1FeHBpcmVzJTNkMzYwMCUyNlgtQW16LVNpZ25hdHVyZSUzZDgwNDJlNTQ5MTBkMWIwMWUyOTkwYmFhNzBmY2U1ZThkMGY2ODAwMTBlNzFjYzQxMDZlYWI0ZTM3ZDgxNDExM2QlMjZYLUFtei1TaWduZWRIZWFkZXJzJTNkaG9zdCUyNngtYW16LWNoZWNrc3VtLW1vZGUlM2RFTkFCTEVEJTI2eC1pZCUzZEdldE9iamVjdCZmaWxlTmFtZT1sYW5kaW5nLmh0bWw"/><script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '{{ ga_id }}');
-    </script>
+<!DOCTYPE html>  
+<html lang="fr">  
+<head>  
+    {% if ga_id %}  
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>  
+    <script>  
+      window.dataLayer = window.dataLayer || [];  
+      function gtag(){dataLayer.push(arguments);}  
+      gtag('js', new Date());  
+      gtag('config', '{{ ga_id }}');  
+    </script>  
     {% endif %}
-    <meta name="google-site-verification" content="ZAvgtMaHQpk0rB6eFn7jSpq2Hd7Lw7bvHDbAuo7J50E" />
-    <meta charset="UTF-8">
+
+    <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="google-site-verification" content="ZAvgtMaHQpk0rB6eFn7jSpq2Hd7Lw7bvHDbAuo7J50E">
+
     <title>Créer un Rétroplanning de Production en Ligne | Rétroplanning.eu</title>
+
     <meta name="description" content="Générez un rétroplanning événementiel ou de production sur mesure en 2 minutes. Personnalisable aux couleurs de votre agence. Export PNG HD immédiat.">
-    <meta name="keywords" content="rétroplanning, production, événementiel, en ligne, générateur, agence, outil de planification, chronogramme">
-    <meta name="robots" content="index, follow">
+
+    <meta name="keywords" content="rétroplanning, production, événementiel, générateur de rétroplanning, planning événementiel, agence communication, chronogramme">
+
+    <meta name="robots" content="index, follow">  
     <meta name="author" content="Omnipub">
-    <meta property="og:title" content="Générateur de Rétroplanning Professionnel">
-    <meta property="og:description" content="Créez et personnalisez votre rétroplanning de production en quelques clics.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.retroplanning.eu">
-    <meta property="og:image" content="https://www.retroplanning.eu/static/demo.png">
+
+    <link rel="canonical" href="https://www.retroplanning.eu/">
+
+    <meta property="og:title" content="Créer un rétroplanning de production professionnel">  
+    <meta property="og:description" content="Générez un rétroplanning événementiel personnalisé, prêt à intégrer dans vos présentations et devis clients.">  
+    <meta property="og:type" content="website">  
+    <meta property="og:url" content="https://www.retroplanning.eu/">
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Rétroplanning.eu",
-      "url": "https://www.retroplanning.eu",
-      "description": "Générateur de rétroplanning de production et d'événement en ligne. Export en PNG haute résolution.",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "2.00",
-        "priceCurrency": "EUR"
-      },
-      "creator": {
-        "@type": "Organization",
-        "name": "Omnipub",
-        "url": "https://www.omnipub.net"
-      }
-    }
+
+    <script type="application/ld+json">  
+    {  
+      "@context": "https://schema.org",  
+      "@type": "WebApplication",  
+      "name": "Rétroplanning.eu",  
+      "url": "https://www.retroplanning.eu",  
+      "description": "Générateur de rétroplanning de production et d'événement en ligne. Export en PNG haute résolution.",  
+      "applicationCategory": "BusinessApplication",  
+      "operatingSystem": "Web",  
+      "offers": {  
+        "@type": "Offer",  
+        "price": "2.00",  
+        "priceCurrency": "EUR"  
+      },  
+      "creator": {  
+        "@type": "Organization",  
+        "name": "Omnipub"  
+      }  
+    }  
     </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-    </style>
+
+    {% if faqs %}  
+    <script type="application/ld+json">  
+    {  
+      "@context": "https://schema.org",  
+      "@type": "FAQPage",  
+      "mainEntity": [  
+        {% for faq in faqs %}  
+        {  
+          "@type": "Question",  
+          "name": {{ faq.question|tojson }},  
+          "acceptedAnswer": {  
+            "@type": "Answer",  
+            "text": {{ faq.answer|tojson }}  
+          }  
+        }{% if not loop.last %},{% endif %}  
+        {% endfor %}  
+      ]  
+    }  
+    </script>  
+    {% endif %}
+
+    <style>  
+        body {  
+            font-family: "Inter", sans-serif;  
+            background-color: #f8fafc;  
+        }  
+    </style>  
 </head>
+
 <body class="text-slate-800">
 
-    <!-- HERO SECTION -->
-    <section class="bg-white border-b border-slate-200 py-20 px-4">
+    <!-- HERO -->  
+    <section class="bg-white border-b border-slate-200 py-20 px-4">  
         <div class="max-w-5xl mx-auto text-center">
-            <h1 class="text-4xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">
-                Le rétroplanning de production <span class="text-teal-600">simple et pro.</span>
+
+            <h1 class="text-4xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">  
+                Le rétroplanning de production  
+                <span class="text-teal-600">simple et pro.</span>  
             </h1>
-            <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-                Générez un rétroplanning événementiel sur mesure en 2 minutes. Personnalisable aux couleurs de votre agence, prêt à être intégré dans vos présentations.
+
+            <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">  
+                Générez un rétroplanning événementiel sur mesure en 2 minutes.  
+                Personnalisable aux couleurs de votre agence, prêt à être intégré  
+                dans vos présentations.  
             </p>
+
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="/formulaire"
-                   class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105 text-lg">
-                    🚀 Créer mon rétroplanning — 2€
+
+                <a href="/formulaire"  
+                   class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:scale-105 text-lg">  
+                    🚀 Créer mon rétroplanning — 2€  
                 </a>
-                <a href="/blog"
-                   class="inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition">
-                    📝 Blog & Guides
+
+                <a href="/blog"  
+                   class="inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition">  
+                    📝 Blog &amp; Guides  
                 </a>
-                <a href="/cdn-cgi/l/email-protection#2b4844455f4a485f6b594e5f59445b474a454542454c054e5e14585e49414e485f166f4e464a454f4e0e191b4f0e191c42454d4459464a5f4244450e191b794e5f59445b474a454542454c" class="inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition">
-                    ✉️ Nous contacter
+
+                <a href="mailto:{{ contact_email }}?subject=Demande%20d%27information%20R%C3%A9troplanning"  
+                   class="inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition">  
+                    ✉️ Nous contacter  
                 </a>
+
             </div>
-            <p class="mt-4 text-sm text-slate-500">Paiement sécurisé • Export PNG HD immédiat • Facture incluse</p>
-        </div>
+
+            <p class="mt-4 text-sm text-slate-500">  
+                Paiement sécurisé • Export PNG HD immédiat • Facture incluse  
+            </p>
+
+        </div>  
     </section>
 
-    <!-- ARGUMENTS -->
-    <section class="py-16 px-4 max-w-6xl mx-auto">
+    <!-- AVANTAGES -->  
+    <section class="py-16 px-4 max-w-6xl mx-auto">  
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-4xl mb-4">⚡</div>
-                <h2 class="text-xl font-bold mb-3">Ultra Rapide</h2>
-                <p class="text-slate-600">Saisissez vos jalons clés et obtenez instantanément une timeline graphique claire et lisible.</p>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">  
+                <div class="text-4xl mb-4">⚡</div>  
+                <h2 class="text-xl font-bold mb-3">Ultra rapide</h2>  
+                <p class="text-slate-600">  
+                    Saisissez vos jalons clés et obtenez instantanément une timeline graphique claire et lisible.  
+                </p>  
             </div>
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-4xl mb-4">🎨</div>
-                <h2 class="text-xl font-bold mb-3">100% Marque Blanche</h2>
-                <p class="text-slate-600">Adaptez les couleurs à votre charte graphique et intégrez vos propres coordonnées en pied de page.</p>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">  
+                <div class="text-4xl mb-4">🎨</div>  
+                <h2 class="text-xl font-bold mb-3">100% marque blanche</h2>  
+                <p class="text-slate-600">  
+                    Adaptez les couleurs à votre charte graphique et intégrez vos propres coordonnées en pied de page.  
+                </p>  
             </div>
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-                <div class="text-4xl mb-4">📄</div>
-                <h2 class="text-xl font-bold mb-3">Format Professionnel</h2>
-                <p class="text-slate-600">Export en PNG haute résolution parfait pour vos slides PowerPoint, PDF ou devis clients.</p>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">  
+                <div class="text-4xl mb-4">📄</div>  
+                <h2 class="text-xl font-bold mb-3">Format professionnel</h2>  
+                <p class="text-slate-600">  
+                    Export PNG haute résolution parfait pour vos slides PowerPoint, PDF ou devis clients.  
+                </p>  
             </div>
-        </div>
+
+        </div>  
     </section>
 
-    <!-- CONTENU SEO ADDITIONNEL -->
-    <section class="bg-white py-16 px-4 border-t border-slate-200">
+    <!-- CONTENU SEO -->  
+    <section class="bg-white py-16 px-4 border-t border-slate-200">  
         <div class="max-w-4xl mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-8 text-slate-900">
-                Pourquoi utiliser un rétroplanning pour vos événements ?
+
+            <h2 class="text-3xl font-bold text-center mb-8 text-slate-900">  
+                Pourquoi utiliser un rétroplanning pour vos événements ?  
             </h2>
-            <div class="prose prose-slate max-w-none text-slate-600 space-y-4 text-lg leading-relaxed">
-                <p>
-                    Le rétroplanning est la méthode de planification la plus fiable pour la gestion de projet événementiel. Contrairement à un planning classique, le rétroplanning de production <strong>part de la date de livraison</strong> (ou de l'événement) et remonte le temps.
+
+            <div class="text-slate-600 space-y-4 text-lg leading-relaxed">
+
+                <p>  
+                    Le rétroplanning est une méthode de planification fiable pour la gestion de projet événementiel.  
+                    Contrairement à un planning classique, le rétroplanning de production  
+                    <strong>part de la date de livraison</strong> ou de l'événement, puis remonte le temps.  
                 </p>
-                <p>
-                    Cette approche permet de sécuriser vos jalons clés : validation du BAT, sourcing des objets publicitaires, délais de production et logistique d'expédition. En visualisant instantanément les dates limites, vous évitez les retards et garantissez une exécution parfaite pour vos clients.
+
+                <p>  
+                    Cette approche permet de sécuriser vos jalons clés : validation du BAT, sourcing des objets  
+                    publicitaires, délais de production et logistique d'expédition. En visualisant les dates limites,  
+                    vous évitez les retards et garantissez une exécution maîtrisée pour vos clients.  
                 </p>
-                <p>
-                    Que vous soyez <strong>agence de communication, organisateur d'événements, imprimeur ou chef de projet</strong>, notre outil vous permet de produire un document professionnel en quelques clics, aux couleurs de votre charte, prêt à être partagé avec votre équipe ou votre client.
+
+                <p>  
+                    Que vous soyez <strong>agence de communication, organisateur d'événements, imprimeur  
+                    ou chef de projet</strong>, notre outil vous permet de produire un document professionnel,  
+                    aux couleurs de votre charte, prêt à être partagé avec votre équipe ou votre client.  
                 </p>
+
             </div>
-            <div class="mt-10 text-center">
-                <a href="/formulaire"
-                   class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-full shadow transition">
-                    ✅ Essayer maintenant pour 2€
-                </a>
+
+            <div class="mt-10 text-center">  
+                <a href="/formulaire"  
+                   class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-full shadow transition">  
+                    ✅ Essayer maintenant pour 2€  
+                </a>  
             </div>
-        </div>
+
+        </div>  
     </section>
 
-    <!-- BLOG CTA -->
-    <section class="py-16 px-4 border-t border-slate-200">
+    <!-- BLOG -->  
+    <section class="py-16 px-4 border-t border-slate-200">  
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-4 text-slate-900">Guides & conseils</h2>
-            <p class="text-slate-600 text-lg mb-8">Méthodes, bonnes pratiques et exemples pour planifier vos projets événementiels et de production.</p>
-            <a href="/blog"
-               class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-full shadow transition">
-                📝 Lire le blog
+
+            <p class="font-bold text-teal-700 text-sm uppercase tracking-widest mb-3">  
+                Ressources  
+            </p>
+
+            <h2 class="text-3xl font-bold mb-4 text-slate-900">  
+                Guides &amp; conseils  
+            </h2>
+
+            <p class="text-slate-600 text-lg mb-8">  
+                Méthodes, bonnes pratiques et exemples pour planifier vos projets événementiels et de production.  
+            </p>
+
+            <a href="/blog"  
+               class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-full shadow transition">  
+                📝 Lire le blog  
             </a>
-        </div>
+
+        </div>  
     </section>
 
-    <!-- FAQ SEO -->
-    <section class="bg-slate-50 py-16 px-4 border-t border-slate-200">
+    <!-- FAQ -->  
+    <section class="bg-slate-50 py-16 px-4 border-t border-slate-200">  
         <div class="max-w-4xl mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-10">Questions fréquentes</h2>
+
+            <h2 class="text-3xl font-bold text-center mb-10">  
+                Questions fréquentes  
+            </h2>
+
             <div class="space-y-6">
-                {% if faqs %}
-                    {% for faq in faqs %}
-                    <div class="bg-white p-6 rounded-xl shadow-sm">
-                        <h3 class="font-bold text-lg mb-2">{{ faq.question }}</h3>
-                        <p class="text-slate-600">{{ faq.answer }}</p>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-bold text-lg mb-2">Comment faire un rétroplanning événementiel efficace ?</h3>
-                    <p class="text-slate-600">Un bon rétroplanning part de la date de l'événement et remonte le temps. Notre outil vous permet de définir jusqu'à 4 étapes clés (Validation, Production, Expédition...) pour visualiser instantanément les délais de votre projet.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-bold text-lg mb-2">Puis-je modifier les couleurs du graphique ?</h3>
-                    <p class="text-slate-600">Oui, notre générateur est conçu pour les agences. Vous pouvez choisir votre couleur principale et secondaire via un sélecteur visuel pour que le document respecte parfaitement votre charte graphique.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="font-bold text-lg mb-2">Vais-je recevoir une facture pour mon entreprise ?</h3>
-                    <p class="text-slate-600">Absolument. Dès le paiement de 2,00€ validé, vous pourrez télécharger votre rétroplanning en PNG et générer instantanément une facture PDF avec votre raison sociale et votre numéro de TVA.</p>
-                </div>
-                {% endif %}
+
+                {% for faq in faqs %}  
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">  
+                    <h3 class="font-bold text-lg mb-2">  
+                        {{ faq.question }}  
+                    </h3>  
+                    <p class="text-slate-600">  
+                        {{ faq.answer }}  
+                    </p>  
+                </div>  
+                {% endfor %}
+
             </div>
-        </div>
+
+        </div>  
     </section>
 
-    <!-- FOOTER -->
+    <!-- FOOTER -->  
     <footer class="bg-slate-900 text-slate-400 py-10 text-center">
-        <div class="mb-4 flex items-center justify-center gap-6 text-sm">
-            <a href="/blog" class="text-teal-400 hover:underline">Blog</a>
-            <a href="/formulaire" class="text-teal-400 hover:underline">Créer un rétroplanning</a>
-            <a href="/cdn-cgi/l/email-protection#88f3f3a8ebe7e6fce9ebfcd7ede5e9e1e4a8f5f5" class="text-teal-400 hover:underline">Contact</a>
-        </div>
-        <p class="mb-2">Un service édité par <strong>Omnipub</strong></p>
-        <p class="text-sm">Contact :
-            <a href="/cdn-cgi/l/email-protection#740f0f54171b1a001517002b1119151d18540909" class="text-teal-400 hover:underline">
-                {{ contact_email }}
+
+        <div class="mb-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">  
+            <a href="/blog" class="text-teal-400 hover:underline">  
+                Blog  
             </a>
+
+            <a href="/formulaire" class="text-teal-400 hover:underline">  
+                Créer un rétroplanning  
+            </a>
+
+            <a href="mailto:{{ contact_email }}" class="text-teal-400 hover:underline">  
+                Contact  
+            </a>  
+        </div>
+
+        <p class="mb-2">  
+            Un service édité par <strong>Omnipub</strong>  
         </p>
+
+        <p class="text-sm">  
+            Contact :  
+            <a href="mailto:{{ contact_email }}" class="text-teal-400 hover:underline">  
+                {{ contact_email }}  
+            </a>  
+        </p>
+
     </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
-</html>
+</body>  
+</html> 
