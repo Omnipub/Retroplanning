@@ -26,8 +26,13 @@ PRIX_TTC = 2.00
 PRIX_HT = round(PRIX_TTC / 1.20, 2)
 TVA = round(PRIX_TTC - PRIX_HT, 2)
 SITE_URL = "https://www.retroplanning.eu"
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Omnipub&2026")
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "retroplanning_secret_key_2026")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+if not ADMIN_PASSWORD:
+    raise RuntimeError("La variable d'environnement ADMIN_PASSWORD doit etre definie")
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("La variable d'environnement FLASK_SECRET_KEY doit etre definie")
 GA_ID = "G-NW27CME5X7"
 
 database_url = os.environ.get("DATABASE_URL", "sqlite:////tmp/retroplanning_blog.db")
