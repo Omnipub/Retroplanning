@@ -628,16 +628,29 @@ def robots():
     return app.response_class("\n".join(lines), mimetype="text/plain")
 
 
+_sitemap_cache = {"content": None, "ts": 0}
+SITEMAP_CACHE_TTL = 600
+
+
 @app.route("/sitemap.xml")
 def sitemap():
+    import time
+    now = time.time()
+    if _sitemap_cache["content"] and (now - _sitemap_cache["ts"] < SITEMAP_CACHE_TTL):
+        return app.response_class(_sitemap_cache["content"], mimetype="application/xml")
+
     urls = [
         (SITE_URL + "/", "weekly", "1.0"),
         (SITE_URL + "/formulaire", "monthly", "0.8"),
         (SITE_URL + "/blog", "weekly", "0.9"),
     ]
 
-    for article in Article.query.filter_by(statut="publie").all():
-        urls.append((SITE_URL + "/blog/" + article.slug, "monthly", "0.8"))
+    try:
+        for article in Article.query.filter_by(statut="publie").all():
+            urls.append((SITE_URL + "/blog/" + article.slug, "monthly", "0.8"))
+    except Exception:
+        # Base de donnees indisponible ou lente : on sert quand meme les pages statiques
+        pass
 
     entries = []
     today = datetime.utcnow().date().isoformat()
@@ -657,6 +670,9 @@ def sitemap():
         + "".join(entries)
         + "</urlset>"
     )
+    _sitemap_cache["content"] = content
+    _sitemap_cache["ts"] = now
+
     return app.response_class(content, mimetype="application/xml")
 
 
