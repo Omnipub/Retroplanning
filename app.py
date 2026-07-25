@@ -49,6 +49,10 @@ db = SQLAlchemy(app)
 from models_billing import Customer, Subscription, UsageRecord, OneTimePayment  # noqa: E402,F401
 from routes_billing import billing_bp  # noqa: E402
 app.register_blueprint(billing_bp)
+# Acces direct au generateur pour un email d'abonne actif (bypass paiement) :
+# voir routes_billing.check_access_or_redirect / billing.get_access_status / billing.record_usage
+from routes_billing import check_access_or_redirect # noqa: E402
+from billing import record_usage # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -390,6 +394,11 @@ def checkout():
     }
     save_order(token, order)
 
+    # --- Stripe billing : un email d'abonne actif genere directement, sans repasser par un paiement ---
+    email = order.get("email", "").strip()
+    if email and check_access_or_redirect(email) is None:
+        return redirect(url_for("success", token=token, abonne="1"))
+
     params = urllib.parse.urlencode({
         "cmd": "_xclick",
         "business": PAYPAL_EMAIL,
@@ -434,6 +443,11 @@ def success():
         order.get("c_main", "#3F8078"), order.get("c_alt", "#75A097")
     )
     save_order(token, order)
+
+    # --- Stripe billing : decompte le quota mensuel si la generation vient d'un abonnement ---
+    if request.args.get("abonne") == "1" and order.get("email"):
+        record_usage(order["email"])
+
     return render_template("success.html", token=token, order=order, contact_email=CONTACT_EMAIL)
 
 
