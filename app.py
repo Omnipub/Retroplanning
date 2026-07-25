@@ -43,6 +43,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+# --- Modeles sectoriels de retroplanning : voir retroplanning-templates/INTEGRATION.md ---
+from templates_secteurs import get_template  # noqa: E402
+from routes_templates import templates_bp  # noqa: E402
+app.register_blueprint(templates_bp)
+
 ORDERS_FILE = "/tmp/orders.json"
 
 VENDEUR = {
@@ -353,7 +358,23 @@ def landing():
 
 @app.route("/formulaire")
 def index():
-    return render_template("index.html", prix=f"{PRIX_TTC:.2f}", contact_email=CONTACT_EMAIL)
+    modele_slug = request.args.get("modele")
+    etapes_initiales = None
+    if modele_slug:
+        modele = get_template(modele_slug)
+        if modele:
+            # Le formulaire actuel ne gere que 4 etapes intermediaires + date evenement.
+            # On exclut "Lancement du projet" (1ere etape) et "Jour J" (derniere etape),
+            # deja couverts par les champs client/evenement/date_event, et on tronque
+            # aux 4 premieres etapes intermediaires si le modele en propose davantage
+            # (cas de mariage, salon_professionnel, lancement_produit).
+            etapes_initiales = modele["etapes"][1:-1][:4]
+    return render_template(
+        "index.html",
+        prix=f"{PRIX_TTC:.2f}",
+        contact_email=CONTACT_EMAIL,
+        etapes_initiales=etapes_initiales,
+    )
 
 
 @app.route("/checkout", methods=["POST"])
