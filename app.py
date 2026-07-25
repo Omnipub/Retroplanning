@@ -43,6 +43,13 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+# --- Stripe billing (facturation) : voir retroplanning-stripe/INTEGRATION.md ---
+# db est deja defini juste au-dessus : on importe les modeles ici (pour db.create_all())
+# et on enregistre le blueprint des routes de facturation Stripe.
+from models_billing import Customer, Subscription, UsageRecord, OneTimePayment  # noqa: E402,F401
+from routes_billing import billing_bp  # noqa: E402
+app.register_blueprint(billing_bp)
+
 ORDERS_FILE = "/tmp/orders.json"
 
 VENDEUR = {
