@@ -363,12 +363,11 @@ def index():
     if modele_slug:
         modele = get_template(modele_slug)
         if modele:
-            # Le formulaire actuel ne gere que 4 etapes intermediaires + date evenement.
+            # Le formulaire gere jusqu'a 6 etapes intermediaires + date evenement.
             # On exclut "Lancement du projet" (1ere etape) et "Jour J" (derniere etape),
-            # deja couverts par les champs client/evenement/date_event, et on tronque
-            # aux 4 premieres etapes intermediaires si le modele en propose davantage
-            # (cas de mariage, salon_professionnel, lancement_produit).
-            etapes_initiales = modele["etapes"][1:-1][:4]
+            # deja couverts par les champs client/evenement/date_event. 6 est le nombre
+            # maximum d'etapes intermediaires parmi les 8 modeles (mariage en compte 6).
+            etapes_initiales = modele["etapes"][1:-1][:6]
     return render_template(
         "index.html",
         prix=f"{PRIX_TTC:.2f}",
@@ -382,7 +381,7 @@ def checkout():
     token = uuid.uuid4().hex
     steps_raw = []
 
-    for index in range(1, 5):
+    for index in range(1, 7):
         label = request.form.get(f"label{index}", "").strip()
         date_value = request.form.get(f"date{index}", "").strip()
         if label and date_value:
