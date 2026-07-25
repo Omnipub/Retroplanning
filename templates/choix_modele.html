@@ -42,6 +42,7 @@ Choisissez un modèle pour démarrer avec les étapes clés déjà en place — 
    class="card p-5 flex flex-col items-center gap-2 text-center hover:shadow-lg transition transform hover:-translate-y-1">
   <span class="text-3xl">{{ modele.icone }}</span>
   <span class="text-sm font-semibold text-slate-700">{{ modele.label }}</span>
+  <span class="text-xs text-slate-400">{{ modele.etapes|length - 2 }} étapes clés</span>
 </a>
 {% endfor %}
 
