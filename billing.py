@@ -31,6 +31,17 @@ PLAN_QUOTAS = {
 }
 
 
+def _sget(obj, key, default=None):
+    """Recupere une valeur sur un objet retourne par le SDK Stripe (StripeObject) ou un
+    dict classique. Les versions recentes du SDK Stripe (>=9) ne supportent plus .get()
+    comme un dict standard sur StripeObject (leve AttributeError), d'ou ce petit
+    utilitaire de compatibilite a utiliser partout a la place de obj.get(cle, defaut)."""
+    try:
+        return obj[key]
+    except (KeyError, TypeError):
+        return default
+
+
 # ---------------------------------------------------------------------------
 # Creation des sessions Stripe Checkout
 # ---------------------------------------------------------------------------
@@ -169,9 +180,9 @@ def get_or_create_customer(email, stripe_customer_id):
 
 
 def on_checkout_completed(session_obj):
-    email = session_obj.get("customer_email") or session_obj.get("customer_details", {}).get("email")
-    stripe_customer_id = session_obj.get("customer")
-    mode = session_obj.get("mode")
+    email = _sget(session_obj, "customer_email") or _sget(_sget(session_obj, "customer_details", {}) or {}, "email")
+    stripe_customer_id = _sget(session_obj, "customer")
+    mode = _sget(session_obj, "mode")
 
     if mode == "payment":
         # Paiement a l'acte : on trace le paiement, la facture est generee automatiquement
@@ -179,16 +190,16 @@ def on_checkout_completed(session_obj):
         payment = OneTimePayment(
             email=email,
             stripe_checkout_session_id=session_obj["id"],
-            stripe_payment_intent_id=session_obj.get("payment_intent"),
-            amount_ttc=(session_obj.get("amount_total") or 0) / 100,
+            stripe_payment_intent_id=_sget(session_obj, "payment_intent"),
+            amount_ttc=(_sget(session_obj, "amount_total") or 0) / 100,
         )
         db.session.add(payment)
         db.session.commit()
 
     elif mode == "subscription":
-        plan = (session_obj.get("metadata") or {}).get("plan", "starter_10")
+        plan = _sget(_sget(session_obj, "metadata") or {}, "plan", "starter_10")
         customer = get_or_create_customer(email, stripe_customer_id)
-        stripe_subscription_id = session_obj.get("subscription")
+        stripe_subscription_id = _sget(session_obj, "subscription")
 
         sub = Subscription.query.filter_by(stripe_subscription_id=stripe_subscription_id).first()
         if not sub:
@@ -209,9 +220,9 @@ def on_subscription_updated(sub_obj):
     sub = Subscription.query.filter_by(stripe_subscription_id=sub_obj["id"]).first()
     if not sub:
         return
-    sub.status = sub_obj.get("status", sub.status)
-    sub.cancel_at_period_end = sub_obj.get("cancel_at_period_end", False)
-    period_end = sub_obj.get("current_period_end")
+    sub.status = _sget(sub_obj, "status", sub.status)
+    sub.cancel_at_period_end = _sget(sub_obj, "cancel_at_period_end", False)
+    period_end = _sget(sub_obj, "current_period_end")
     if period_end:
         sub.current_period_end = datetime.fromtimestamp(period_end, tz=timezone.utc)
     db.session.commit()
