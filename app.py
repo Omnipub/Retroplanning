@@ -43,6 +43,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+# --- Modeles sectoriels de retroplanning : voir retroplanning-templates/INTEGRATION.md ---
+from templates_secteurs import get_template  # noqa: E402
+from routes_templates import templates_bp  # noqa: E402
+app.register_blueprint(templates_bp)
 # --- Stripe billing (facturation) : voir retroplanning-stripe/INTEGRATION.md ---
 # db est deja defini juste au-dessus : on importe les modeles ici (pour db.create_all())
 # et on enregistre le blueprint des routes de facturation Stripe.
@@ -368,7 +372,22 @@ def landing():
 
 @app.route("/formulaire")
 def index():
-    return render_template("index.html", prix=f"{PRIX_TTC:.2f}", contact_email=CONTACT_EMAIL)
+    modele_slug = request.args.get("modele")
+    etapes_initiales = None
+    if modele_slug:
+        modele = get_template(modele_slug)
+        if modele:
+            # Le formulaire gere jusqu'a 6 etapes intermediaires + date evenement.
+            # On exclut "Lancement du projet" (1ere etape) et "Jour J" (derniere etape),
+            # deja couverts par les champs client/evenement/date_event. 6 est le nombre
+            # maximum d'etapes intermediaires parmi les 8 modeles (mariage en compte 6).
+            etapes_initiales = modele["etapes"][1:-1][:6]
+    return render_template(
+        "index.html",
+        prix=f"{PRIX_TTC:.2f}",
+        contact_email=CONTACT_EMAIL,
+        etapes_initiales=etapes_initiales,
+    )
 
 
 @app.route("/checkout", methods=["POST"])
@@ -376,7 +395,7 @@ def checkout():
     token = uuid.uuid4().hex
     steps_raw = []
 
-    for index in range(1, 5):
+    for index in range(1, 7):
         label = request.form.get(f"label{index}", "").strip()
         date_value = request.form.get(f"date{index}", "").strip()
         if label and date_value:

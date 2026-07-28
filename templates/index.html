@@ -61,11 +61,11 @@
             <div class="card p-6">  
                 <h2 class="text-xl font-semibold mb-1 dyn-text" style="color:#3F8078">📋 Vos étapes clés</h2>  
                 <p class="text-xs text-slate-400 mb-4">Remplissez uniquement les étapes dont vous avez besoin (minimum 1)</p>  
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                     <div class="p-3 border rounded-lg bg-slate-50">  
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 1</span>  
-                        <input type="text" name="label1" placeholder="Ex : Validation commande"  
+                        <input type="text" name="label1" placeholder="Ex : Validation commande" value="{{ etapes_initiales[0] if etapes_initiales and etapes_initiales|length > 0 else '' }}"  
                                class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
                         <input type="date" name="date1"  
                                class="block w-full text-sm border-slate-300 rounded-md border p-1">  
@@ -73,7 +73,7 @@
 
                     <div class="p-3 border rounded-lg bg-slate-50">  
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 2</span>  
-                        <input type="text" name="label2" placeholder="Ex : Validation BAT"  
+                        <input type="text" name="label2" placeholder="Ex : Validation BAT" value="{{ etapes_initiales[1] if etapes_initiales and etapes_initiales|length > 1 else '' }}"  
                                class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
                         <input type="date" name="date2"  
                                class="block w-full text-sm border-slate-300 rounded-md border p-1">  
@@ -81,7 +81,7 @@
 
                     <div class="p-3 border rounded-lg bg-slate-50">  
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 3</span>  
-                        <input type="text" name="label3" placeholder="Ex : Production"  
+                        <input type="text" name="label3" placeholder="Ex : Production" value="{{ etapes_initiales[2] if etapes_initiales and etapes_initiales|length > 2 else '' }}"  
                                class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
                         <input type="date" name="date3"  
                                class="block w-full text-sm border-slate-300 rounded-md border p-1">  
@@ -89,9 +89,25 @@
 
                     <div class="p-3 border rounded-lg bg-slate-50">  
                         <span class="text-xs font-bold text-slate-400 uppercase">Étape 4</span>  
-                        <input type="text" name="label4" placeholder="Ex : Expédition"  
+                        <input type="text" name="label4" placeholder="Ex : Expédition" value="{{ etapes_initiales[3] if etapes_initiales and etapes_initiales|length > 3 else '' }}"  
                                class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
                         <input type="date" name="date4"  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
+                    </div>
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 5</span>  
+                        <input type="text" name="label5" placeholder="Ex : Contrôle qualité" value="{{ etapes_initiales[4] if etapes_initiales and etapes_initiales|length > 4 else '' }}"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date5"  
+                               class="block w-full text-sm border-slate-300 rounded-md border p-1">  
+                    </div>
+
+                    <div class="p-3 border rounded-lg bg-slate-50">  
+                        <span class="text-xs font-bold text-slate-400 uppercase">Étape 6</span>  
+                        <input type="text" name="label6" placeholder="Ex : Livraison finale" value="{{ etapes_initiales[5] if etapes_initiales and etapes_initiales|length > 5 else '' }}"  
+                               class="mt-1 block w-full text-sm border-slate-300 rounded-md border p-1 mb-2">  
+                        <input type="date" name="date6"  
                                class="block w-full text-sm border-slate-300 rounded-md border p-1">  
                     </div>
 
