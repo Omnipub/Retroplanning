@@ -3,6 +3,7 @@
 # Complete la logique PayPal existante (coexistence temporaire, voir INTEGRATION.md).
 
 from flask import Blueprint, request, redirect, jsonify, render_template
+import os
 
 import stripe
 from billing import (
@@ -16,7 +17,7 @@ from models_billing import Customer
 
 billing_bp = Blueprint("billing", __name__)
 
-SITE_URL = "https://www.retroplanning.eu"  # deja defini dans app.py
+SITE_URL = os.environ.get("SITE_URL", "https://www.retroplanning.eu")
 
 
 # ---------------------------------------------------------------------------
