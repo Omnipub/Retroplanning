@@ -76,7 +76,7 @@ HOME_FAQS = [
     },
     {
         "question": "Combien de jalons puis-je ajouter ?",
-        "answer": "Le générateur permet de renseigner jusqu'à quatre étapes clés avant la date finale."
+        "answer": "Le générateur permet de renseigner jusqu'à six étapes clés avant la date finale."
     },
     {
         "question": "Puis-je modifier les couleurs du graphique ?",
@@ -93,6 +93,10 @@ HOME_FAQS = [
     {
         "question": "Vais-je recevoir une facture ?",
         "answer": "Oui. Après paiement, vous pouvez générer une facture PDF pour votre entreprise."
+    },
+    {
+        "question": "Quelles sont les formules disponibles ?",
+        "answer": "Paiement à l'acte à 2€ HT, abonnement Starter à 9,90€ HT/mois (10 rétroplannings), ou abonnement Illimité à 19,90€ HT/mois. Des modèles préétablis par secteur d'activité sont aussi disponibles pour démarrer plus vite."
     }
 ]
 
