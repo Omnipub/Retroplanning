@@ -128,7 +128,9 @@ def stripe_webhook():
     except stripe.error.SignatureVerificationError:
         return "Signature invalide", 400
     except Exception as exc:  # noqa: BLE001 -- on log largement pour diagnostiquer en prod
-        print(f"[webhook stripe] erreur de traitement : {exc}")
+        import traceback
+        print(f"[webhook stripe] erreur de traitement : {exc.__class__.__name__}: {exc}")
+        traceback.print_exc()
         return "Erreur de traitement", 500
 
     return "", 200
