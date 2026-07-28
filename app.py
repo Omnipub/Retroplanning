@@ -22,8 +22,8 @@ app = Flask(__name__)
 
 PAYPAL_EMAIL = "commercial@omnipub.net"
 CONTACT_EMAIL = "contact@retroplanning.eu"
-PRIX_TTC = 2.00
-PRIX_HT = round(PRIX_TTC / 1.20, 2)
+PRIX_HT = 2.00
+PRIX_TTC = round(PRIX_HT * 1.20, 2)
 TVA = round(PRIX_TTC - PRIX_HT, 2)
 SITE_URL = "https://www.retroplanning.eu"
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
