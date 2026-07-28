@@ -22,8 +22,8 @@ app = Flask(__name__)
 
 PAYPAL_EMAIL = "commercial@omnipub.net"
 CONTACT_EMAIL = "contact@retroplanning.eu"
-PRIX_TTC = 2.00
-PRIX_HT = round(PRIX_TTC / 1.20, 2)
+PRIX_HT = 2.00
+PRIX_TTC = round(PRIX_HT * 1.20, 2)
 TVA = round(PRIX_TTC - PRIX_HT, 2)
 SITE_URL = "https://www.retroplanning.eu"
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
@@ -47,6 +47,16 @@ db = SQLAlchemy(app)
 from templates_secteurs import get_template  # noqa: E402
 from routes_templates import templates_bp  # noqa: E402
 app.register_blueprint(templates_bp)
+# --- Stripe billing (facturation) : voir retroplanning-stripe/INTEGRATION.md ---
+# db est deja defini juste au-dessus : on importe les modeles ici (pour db.create_all())
+# et on enregistre le blueprint des routes de facturation Stripe.
+from models_billing import Customer, Subscription, UsageRecord, OneTimePayment  # noqa: E402,F401
+from routes_billing import billing_bp  # noqa: E402
+app.register_blueprint(billing_bp)
+# Acces direct au generateur pour un email d'abonne actif (bypass paiement) :
+# voir routes_billing.check_access_or_redirect / billing.get_access_status / billing.record_usage
+from routes_billing import check_access_or_redirect # noqa: E402
+from billing import record_usage # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -407,6 +417,11 @@ def checkout():
     }
     save_order(token, order)
 
+    # --- Stripe billing : un email d'abonne actif genere directement, sans repasser par un paiement ---
+    email = order.get("email", "").strip()
+    if email and check_access_or_redirect(email) is None:
+        return redirect(url_for("success", token=token, abonne="1"))
+
     params = urllib.parse.urlencode({
         "cmd": "_xclick",
         "business": PAYPAL_EMAIL,
@@ -451,6 +466,11 @@ def success():
         order.get("c_main", "#3F8078"), order.get("c_alt", "#75A097")
     )
     save_order(token, order)
+
+    # --- Stripe billing : decompte le quota mensuel si la generation vient d'un abonnement ---
+    if request.args.get("abonne") == "1" and order.get("email"):
+        record_usage(order["email"])
+
     return render_template("success.html", token=token, order=order, contact_email=CONTACT_EMAIL)
 
 
