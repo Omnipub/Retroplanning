@@ -15,7 +15,7 @@ class Customer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    stripe_customer_id = db.Column(db.String(64), unique=True, nullable=False)
+    stripe_customer_id = db.Column(db.String(255), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     subscription = db.relationship(
@@ -32,7 +32,7 @@ class Subscription(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("customers.id"), nullable=False)
-    stripe_subscription_id = db.Column(db.String(64), unique=True, nullable=False)
+    stripe_subscription_id = db.Column(db.String(255), unique=True, nullable=False)
     plan = db.Column(db.String(32), nullable=False)  # "starter_10" ou "illimite"
     status = db.Column(db.String(32), nullable=False, default="active")
     # valeurs possibles (miroir des statuts Stripe) :
@@ -69,8 +69,8 @@ class OneTimePayment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), nullable=False, index=True)
-    stripe_checkout_session_id = db.Column(db.String(64), unique=True, nullable=False)
-    stripe_payment_intent_id = db.Column(db.String(64), nullable=True)
+    stripe_checkout_session_id = db.Column(db.String(255), unique=True, nullable=False)
+    stripe_payment_intent_id = db.Column(db.String(255), nullable=True)
     amount_ttc = db.Column(db.Numeric(10, 2), nullable=False)
     invoice_url = db.Column(db.String(512), nullable=True)  # lien facture Stripe (hosted_invoice_url ou receipt)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
