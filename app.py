@@ -56,7 +56,8 @@ app.register_blueprint(billing_bp)
 # Acces direct au generateur pour un email d'abonne actif (bypass paiement) :
 # voir routes_billing.check_access_or_redirect / billing.get_access_status / billing.record_usage
 from routes_billing import check_access_or_redirect # noqa: E402
-from billing import record_usage # noqa: E402
+from billing import record_usage, create_one_time_checkout # noqa: E402
+from routes_billing import _site_url # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -422,18 +423,12 @@ def checkout():
     if email and check_access_or_redirect(email) is None:
         return redirect(url_for("success", token=token, abonne="1"))
 
-    params = urllib.parse.urlencode({
-        "cmd": "_xclick",
-        "business": PAYPAL_EMAIL,
-        "item_name": f"Retroplanning - {order['nom_evenement']} - {order['nom_client']}",
-        "amount": f"{PRIX_TTC:.2f}",
-        "currency_code": "EUR",
-        "return": f"{SITE_URL}/success?token={token}",
-        "cancel_return": f"{SITE_URL}/cancel",
-        "no_shipping": "1",
-        "no_note": "1",
-    })
-    return redirect("https://www.paypal.com/cgi-bin/webscr?" + params)
+    session = create_one_time_checkout(
+        email=email,
+        success_url=_site_url() + f"/success?token={token}",
+        cancel_url=_site_url() + "/cancel",
+    )
+    return redirect(session.url, code=303)
 
 
 @app.route("/success")
