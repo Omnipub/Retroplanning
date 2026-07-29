@@ -57,7 +57,7 @@ app.register_blueprint(billing_bp)
 # voir routes_billing.check_access_or_redirect / billing.get_access_status / billing.record_usage
 from routes_billing import check_access_or_redirect # noqa: E402
 from billing import record_usage, create_one_time_checkout # noqa: E402
-from routes_billing import _site_url # noqa: E402
+from routes_billing import SITE_URL as BILLING_SITE_URL # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -425,8 +425,8 @@ def checkout():
 
     session = create_one_time_checkout(
         email=email,
-        success_url=_site_url() + f"/success?token={token}",
-        cancel_url=_site_url() + "/cancel",
+        success_url=BILLING_SITE_URL + f"/success?token={token}",
+        cancel_url=BILLING_SITE_URL + "/cancel",
     )
     return redirect(session.url, code=303)
 
