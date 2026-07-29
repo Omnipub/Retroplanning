@@ -29,7 +29,7 @@ body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
 </a>
 
 <h1 class="text-3xl font-bold text-slate-800">
-📁 DE QUEL TYPE DE PROJET S'AGIT-IL ?
+DE QUEL TYPE DE PROJET S'AGIT-IL ?
 </h1>
 <p class="text-slate-600 mt-2">
 Choisissez un modèle pour démarrer avec les étapes clés déjà en place — tout reste modifiable ensuite.
@@ -40,7 +40,6 @@ Choisissez un modèle pour démarrer avec les étapes clés déjà en place — 
 {% for modele in modeles %}
 <a href="{{ url_for('index', modele=modele.slug) }}"
    class="card p-5 flex flex-col items-center gap-2 text-center hover:shadow-lg transition transform hover:-translate-y-1">
-  <span class="text-3xl">{{ modele.icone }}</span>
   <span class="text-sm font-semibold text-slate-700">{{ modele.label }}</span>
   <span class="text-xs text-slate-400">{{ modele.etapes|length - 2 }} étapes clés</span>
 </a>
@@ -48,7 +47,6 @@ Choisissez un modèle pour démarrer avec les étapes clés déjà en place — 
 
 <a href="{{ url_for('index') }}"
    class="card p-5 flex flex-col items-center gap-2 text-center border-dashed border-2 border-slate-300 hover:shadow-lg transition transform hover:-translate-y-1">
-  <span class="text-3xl">✨</span>
   <span class="text-sm font-semibold text-slate-500">Je pars de zéro</span>
 </a>
 </div>
