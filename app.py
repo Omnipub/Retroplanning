@@ -218,6 +218,19 @@ def is_admin():
     return bool(session.get("admin"))
 
 
+@app.route("/admin/fix-stripe-columns")
+def fix_stripe_columns():
+    if request.args.get("key") != ADMIN_PASSWORD:
+        abort(403)
+    from sqlalchemy import text as sql_text
+    with db.engine.begin() as conn:
+        conn.execute(sql_text("ALTER TABLE customers ALTER COLUMN stripe_customer_id TYPE VARCHAR(255)"))
+        conn.execute(sql_text("ALTER TABLE subscriptions ALTER COLUMN stripe_subscription_id TYPE VARCHAR(255)"))
+        conn.execute(sql_text("ALTER TABLE one_time_payments ALTER COLUMN stripe_checkout_session_id TYPE VARCHAR(255)"))
+        conn.execute(sql_text("ALTER TABLE one_time_payments ALTER COLUMN stripe_payment_intent_id TYPE VARCHAR(255)"))
+    return "OK - columns widened"
+
+
 def load_orders():
     if not os.path.exists(ORDERS_FILE):
         return {}
