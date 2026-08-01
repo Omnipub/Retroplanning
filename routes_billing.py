@@ -55,9 +55,21 @@ def checkout_abonnement(plan):
     if plan not in ("starter_10", "illimite"):
         return jsonify({"error": "Plan inconnu"}), 400
 
-    email = request.form.get("email")
+    email = request.form.get("email", "").strip()
     if not email:
         return jsonify({"error": "Email requis"}), 400
+
+    status = get_access_status(email)
+    if status["allowed"]:
+        # Deja un abonnement actif pour cet email : ne jamais creer une deuxieme
+        # session Stripe (mode subscription cree systematiquement un nouveau
+        # Customer + une nouvelle souscription independante -- ce serait un second
+        # abonnement distinct, donc un double prelevement mensuel). On renvoie vers
+        # la gestion de compte existante (le portail Stripe gere le changement de
+        # plan sur l'abonnement en cours).
+        return render_template(
+            "abonnement_existant.html", email=email, plan_actuel=status["plan"]
+        ), 409
 
     checkout_session = create_subscription_checkout(
         email=email,

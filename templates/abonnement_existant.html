@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    {% if ga_id %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{ ga_id }}');
+</script>
+{% endif %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonnement déjà actif — Rétroplanning.eu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-md max-w-md w-full text-center">
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">Vous avez déjà un abonnement actif</h1>
+        <p class="text-slate-600 mb-6">
+            L'email <strong>{{ email }}</strong> est déjà associé à un abonnement
+            <strong>{{ "Starter 10" if plan_actuel == "starter_10" else "Illimité" }}</strong>
+            en cours. Pas besoin d'en souscrire un nouveau — vous pouvez créer vos rétroplannings
+            dès maintenant, ou changer de formule depuis votre espace client.
+        </p>
+        <div class="space-y-4">
+            <a href="/modeles" class="block w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-md">
+                Créer mon rétroplanning
+            </a>
+            <form method="POST" action="/mon-compte" class="block">
+                <input type="hidden" name="email" value="{{ email }}">
+                <button type="submit" class="block w-full bg-slate-200 text-slate-800 font-bold py-3 rounded-lg">
+                    Gérer mon abonnement
+                </button>
+            </form>
+        </div>
+        <p class="mt-8 text-xs text-slate-400">Une question ? contactez-nous sur {{ contact_email }}</p>
+    </div>
+</body>
+</html>
