@@ -1,6 +1,6 @@
 # routes_billing.py
 # Routes Flask a enregistrer dans app.py (via app.register_blueprint).
-# Complete la logique PayPal existante (coexistence temporaire, voir INTEGRATION.md).
+# Contient la logique de facturation Stripe (paiement a l'acte, abonnements, webhook).
 
 from flask import Blueprint, request, redirect, jsonify, render_template
 import os
@@ -11,7 +11,9 @@ from billing import (
     create_subscription_checkout,
     create_customer_portal_session,
     get_access_status,
+    get_checkout_session,
     handle_webhook_event,
+    _sget,
 )
 from models_billing import Customer
 
@@ -71,7 +73,14 @@ def paiement_succes():
     # Stripe redirige ici apres paiement reussi. Le webhook (asynchrone) est la source
     # de verite pour l'activation reelle -- cette page ne fait qu'afficher un message
     # de confirmation immediat a l'utilisateur.
-    return render_template("paiement_succes.html")
+    session_obj = get_checkout_session(request.args.get("session_id", ""))
+    is_subscription = bool(session_obj) and _sget(session_obj, "mode") == "subscription"
+    email = None
+    if session_obj:
+        email = _sget(session_obj, "customer_email") or _sget(
+            _sget(session_obj, "customer_details") or {}, "email"
+        )
+    return render_template("paiement_succes.html", is_subscription=is_subscription, email=email)
 
 
 # ---------------------------------------------------------------------------

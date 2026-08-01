@@ -21,14 +21,25 @@
         <h1 class="text-2xl font-bold text-slate-800 mb-2">Paiement réussi !</h1>  
         <p class="text-slate-600 mb-8">Votre rétroplanning est prêt.</p>  
           
-        <div class="space-y-4">  
-            <a href="/download/png/{{ token }}" class="block w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-md">  
-                Télécharger mon Rétroplanning (PNG)  
-            </a>  
-            <a href="/facture/{{ token }}" class="block w-full bg-slate-200 text-slate-800 font-bold py-3 rounded-lg">  
-                Éditer ma facture  
-            </a>  
-        </div>  
+        <div class="space-y-4">
+            <a href="/download/png/{{ token }}" class="block w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-md">
+                Télécharger mon Rétroplanning (PNG)
+            </a>
+            {% if is_subscriber %}
+            <form method="POST" action="/mon-compte" class="block">
+                <input type="hidden" name="email" value="{{ order.email }}">
+                <button type="submit" class="block w-full bg-slate-200 text-slate-800 font-bold py-3 rounded-lg">
+                    Voir mes factures
+                </button>
+            </form>
+            {% elif invoice_url %}
+            <a href="{{ invoice_url }}" target="_blank" rel="noopener" class="block w-full bg-slate-200 text-slate-800 font-bold py-3 rounded-lg">
+                Voir ma facture
+            </a>
+            {% else %}
+            <p class="text-xs text-slate-400 text-center">Votre facture vous a été envoyée automatiquement par email.</p>
+            {% endif %}
+        </div>
         <p class="mt-8 text-xs text-slate-400">Une question ? contactez-nous sur {{ contact_email }}</p>  
     </div>  
 </body>  
