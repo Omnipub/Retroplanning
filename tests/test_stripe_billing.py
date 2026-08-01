@@ -323,3 +323,53 @@ class TestMonCompteAccessible:
     def test_tarifs_promise_links_to_mon_compte(self, client):
         response = client.get("/tarifs")
         assert 'href="/mon-compte"' in response.get_data(as_text=True)
+
+
+class TestNoDuplicateSubscriptionCheckout:
+    """Scenario 8 : re-cliquer sur un plan d'abonnement avec un email deja abonne
+    (actif) ne doit jamais recreer une session Stripe -- create_subscription_checkout
+    cree systematiquement un nouveau Customer + une nouvelle souscription
+    independante (customer_creation="always" en mode subscription), donc un second
+    abonnement distinct et un double prelevement mensuel si on laisse passer."""
+
+    def test_already_subscribed_email_blocked_before_stripe_call(self, app_module, client):
+        email = "deja.abonne@example.com"
+        _make_active_subscriber(app_module, email, plan="starter_10")
+
+        with patch("billing.stripe.checkout.Session.create") as mock_create:
+            response = client.post(
+                "/checkout/abonnement/starter_10", data={"email": email}
+            )
+            mock_create.assert_not_called()
+
+        assert response.status_code == 409
+        body = response.get_data(as_text=True)
+        assert email in body
+        assert 'action="/mon-compte"' in body
+
+    def test_already_subscribed_blocked_even_for_a_different_plan(self, app_module, client):
+        """Un abonne starter_10 qui clique sur Illimite ne doit pas non plus creer
+        une deuxieme souscription Stripe : la mise a niveau doit passer par le
+        portail client (/mon-compte), qui agit sur l'abonnement existant."""
+        email = "veut.upgrade@example.com"
+        _make_active_subscriber(app_module, email, plan="starter_10")
+
+        with patch("billing.stripe.checkout.Session.create") as mock_create:
+            response = client.post(
+                "/checkout/abonnement/illimite", data={"email": email}
+            )
+            mock_create.assert_not_called()
+
+        assert response.status_code == 409
+
+    def test_new_email_still_reaches_stripe_checkout(self, client):
+        email = "jamais.abonne.subscription@example.com"
+        fake_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-newsub")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_session) as mock_create:
+            response = client.post(
+                "/checkout/abonnement/starter_10", data={"email": email}, follow_redirects=False
+            )
+
+        mock_create.assert_called_once()
+        assert response.status_code in (301, 302, 303)
+        assert response.headers["Location"] == fake_session.url
