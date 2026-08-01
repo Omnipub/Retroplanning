@@ -187,11 +187,18 @@ def on_checkout_completed(session_obj):
     if mode == "payment":
         # Paiement a l'acte : on trace le paiement, la facture est generee automatiquement
         # par Stripe (invoice_creation active dans create_one_time_checkout).
+        invoice_url = None
+        invoice_id = _sget(session_obj, "invoice")
+        if invoice_id:
+            invoice = stripe.Invoice.retrieve(invoice_id)
+            invoice_url = _sget(invoice, "hosted_invoice_url")
+
         payment = OneTimePayment(
             email=email,
             stripe_checkout_session_id=session_obj["id"],
             stripe_payment_intent_id=_sget(session_obj, "payment_intent"),
             amount_ttc=(_sget(session_obj, "amount_total") or 0) / 100,
+            invoice_url=invoice_url,
         )
         db.session.add(payment)
         db.session.commit()
