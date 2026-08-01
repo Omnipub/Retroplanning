@@ -194,6 +194,12 @@
         showStep(current);
     });
 
+    document.querySelector('form').addEventListener('submit', function (event) {
+        if (!stepEstValide(current)) {
+            event.preventDefault();
+        }
+    });
+
     showStep(current);
 })();
 </script>

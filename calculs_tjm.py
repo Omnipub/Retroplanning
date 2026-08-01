@@ -34,13 +34,13 @@ DISCLAIMER = (
 
 # Valeurs par defaut realistes, utilisees pour pre-remplir le questionnaire (section 3).
 DEFAUTS = {
-    "revenu_net_mensuel": 3000.0,
+    "revenu_net_mensuel": 3000,
     "mois_remuneres": 11,
-    "charges_mensuelles": 400.0,
+    "charges_mensuelles": 400,
     "statut_juridique": "micro",
-    "temps_facturable": 60.0,
-    "jours_par_semaine": 5.0,
-    "semaines_conges": 5.0,
+    "temps_facturable": 60,
+    "jours_par_semaine": 5,
+    "semaines_conges": 5,
 }
 
 
