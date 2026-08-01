@@ -648,6 +648,17 @@ def admin_blog_edit(article_id):
     return render_template("admin_blog_form.html", article=article, error=None)
 
 
+@app.route("/admin/blog/<int:article_id>/supprimer", methods=["POST"])
+def admin_blog_delete(article_id):
+    if not is_admin():
+        return redirect(url_for("admin_login"))
+
+    article = Article.query.get_or_404(article_id)
+    db.session.delete(article)
+    db.session.commit()
+    return redirect(url_for("admin_blog"))
+
+
 @app.route("/admin/logout")
 def admin_logout():
     session.pop("admin", None)
