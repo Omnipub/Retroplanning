@@ -210,3 +210,11 @@ class TestNonSubscriberChargedViaStripe:
         location = response.headers["Location"]
         assert location == fake_session.url
         assert "abonne=1" not in location
+
+        # Regression : /checkout construit success_url avec un ?token=... deja
+        # present ; create_one_time_checkout ne doit pas y accoler un second '?'
+        # (sinon Flask lit tout apres le premier '?' comme la valeur du token,
+        # cf. bug "Commande introuvable" en prod).
+        called_success_url = mock_create.call_args.kwargs["success_url"]
+        assert called_success_url.count("?") == 1
+        assert "&session_id={CHECKOUT_SESSION_ID}" in called_success_url

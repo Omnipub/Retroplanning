@@ -46,6 +46,15 @@ def _sget(obj, key, default=None):
 # Creation des sessions Stripe Checkout
 # ---------------------------------------------------------------------------
 
+def _with_session_id(success_url):
+    """Ajoute le placeholder {CHECKOUT_SESSION_ID} de Stripe a l'URL de succes, en
+    utilisant '&' si success_url contient deja une query string (ex: ?token=...)
+    pour ne jamais produire une URL avec deux '?' (ce qui corromprait le parsing
+    des query params cote Flask, ex: request.args.get('token'))."""
+    separator = "&" if "?" in success_url else "?"
+    return success_url + separator + "session_id={CHECKOUT_SESSION_ID}"
+
+
 def create_one_time_checkout(email, success_url, cancel_url):
     """Paiement a l'acte, 2EUR TTC. Pas de compte necessaire au sens strict :
     Stripe cree/retrouve un Customer via l'email, mais aucun mot de passe n'est demande."""
@@ -54,7 +63,7 @@ def create_one_time_checkout(email, success_url, cancel_url):
         customer_email=email,
         line_items=[{"price": PRICE_ONE_TIME, "quantity": 1}],
         invoice_creation={"enabled": True},  # genere automatiquement une facture PDF
-        success_url=success_url + "?session_id={CHECKOUT_SESSION_ID}",
+        success_url=_with_session_id(success_url),
         cancel_url=cancel_url,
         metadata={"type": "one_time"},
     )
@@ -71,7 +80,7 @@ def create_subscription_checkout(email, plan, success_url, cancel_url):
         mode="subscription",
         customer_email=email,
         line_items=[{"price": price_id, "quantity": 1}],
-        success_url=success_url + "?session_id={CHECKOUT_SESSION_ID}",
+        success_url=_with_session_id(success_url),
         cancel_url=cancel_url,
         metadata={"type": "subscription", "plan": plan},
         subscription_data={"metadata": {"plan": plan}},
