@@ -87,12 +87,22 @@ def paiement_succes():
 # Portail client (gestion abonnement / resiliation en libre-service)
 # ---------------------------------------------------------------------------
 
-@billing_bp.route("/mon-compte", methods=["POST"])
+@billing_bp.route("/mon-compte", methods=["GET", "POST"])
 def mon_compte():
-    email = request.form.get("email")
-    customer = Customer.query.filter_by(email=email).first()
+    """GET : page permanente (lien accessible depuis le footer et /tarifs) avec un
+    formulaire email. POST : cree la session du portail client Stripe et y redirige
+    -- c'est la seule fois ou l'abonne a besoin de saisir son email, Stripe gere
+    ensuite la facturation et la resiliation en libre-service."""
+    if request.method == "GET":
+        return render_template("mon_compte.html", error=None)
+
+    email = request.form.get("email", "").strip()
+    customer = Customer.query.filter_by(email=email).first() if email else None
     if not customer:
-        return jsonify({"error": "Aucun compte trouve pour cet email"}), 404
+        return render_template(
+            "mon_compte.html",
+            error="Aucun compte abonné trouvé pour cet email.",
+        ), 404
 
     portal_session = create_customer_portal_session(
         stripe_customer_id=customer.stripe_customer_id,

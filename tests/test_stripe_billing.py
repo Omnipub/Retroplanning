@@ -295,3 +295,31 @@ class TestPaiementSuccesAccountLink:
 
         body = response.get_data(as_text=True)
         assert 'action="/mon-compte"' not in body
+
+
+class TestMonCompteAccessible:
+    """Scenario 7 : /mon-compte est une vraie page (GET), accessible en permanence
+    depuis le footer et /tarifs -- pas seulement juste apres un paiement -- pour que
+    la promesse "resiliation en 1 clic depuis votre espace client" (/tarifs) soit
+    honorable a tout moment, pas uniquement dans les quelques instants qui suivent
+    un achat."""
+
+    def test_get_renders_a_real_page(self, client):
+        response = client.get("/mon-compte")
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert '<form method="POST" action="/mon-compte"' in body
+
+    def test_post_unknown_email_shows_friendly_error_not_raw_json(self, client):
+        response = client.post("/mon-compte", data={"email": "inconnu@example.com"})
+        assert response.status_code == 404
+        assert response.content_type.startswith("text/html")
+        assert "Aucun compte abonné trouvé" in response.get_data(as_text=True)
+
+    def test_landing_footer_links_to_mon_compte(self, client):
+        response = client.get("/")
+        assert 'href="/mon-compte"' in response.get_data(as_text=True)
+
+    def test_tarifs_promise_links_to_mon_compte(self, client):
+        response = client.get("/tarifs")
+        assert 'href="/mon-compte"' in response.get_data(as_text=True)
