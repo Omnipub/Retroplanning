@@ -14,6 +14,7 @@
 
 import sys
 import uuid
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -157,7 +158,9 @@ class TestCheckoutBypassForActiveSubscriber:
 class TestQuotaBlocksEleventhGeneration:
     """Scenario 3 : apres 10 generations comptabilisees dans le mois, la 11e n'est
     plus autorisee en acces direct (quota du plan starter_10 atteint) et /checkout
-    repasse alors par le paiement PayPal, exactement comme un compte non abonne."""
+    repasse alors par un paiement Stripe a l'acte, exactement comme un compte non
+    abonne. On mocke stripe.checkout.Session.create pour ne jamais appeler l'API
+    Stripe reelle."""
 
     def test_tenth_allowed_eleventh_blocked_by_quota(self, app_module, client):
         from billing import get_access_status, record_usage
@@ -175,27 +178,43 @@ class TestQuotaBlocksEleventhGeneration:
             assert status_after_ten["allowed"] is False
             assert status_after_ten["reason"] == "quota_exceeded"
 
-        response = client.post(
-            "/checkout", data=_checkout_payload(email), follow_redirects=False
-        )
+        fake_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-quota")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_session) as mock_create:
+            response = client.post(
+                "/checkout", data=_checkout_payload(email), follow_redirects=False
+            )
+
+        mock_create.assert_called_once()
         location = response.headers["Location"]
-        assert "paypal.com" in location
+        assert location == fake_session.url
         assert "abonne=1" not in location
 
 
-class TestNonSubscriberUnchangedPaypalFlow:
-    """Scenario 4 : un email qui n'a jamais souscrit d'abonnement suit toujours le
-    parcours PayPal existant a l'identique, sans aucune regression introduite par
-    la logique d'acces Stripe."""
+class TestNonSubscriberChargedViaStripe:
+    """Scenario 4 : un email qui n'a jamais souscrit d'abonnement est redirige vers
+    un paiement Stripe a l'acte (mode=payment), sans regression introduite par la
+    logique d'acces aux abonnements. On mocke stripe.checkout.Session.create pour
+    ne jamais appeler l'API Stripe reelle."""
 
-    def test_non_subscriber_follows_paypal_flow(self, client):
+    def test_non_subscriber_redirected_to_stripe_checkout(self, client):
         email = "jamais.abonne@example.com"
 
-        response = client.post(
-            "/checkout", data=_checkout_payload(email), follow_redirects=False
-        )
+        fake_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-onetime")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_session) as mock_create:
+            response = client.post(
+                "/checkout", data=_checkout_payload(email), follow_redirects=False
+            )
 
+        mock_create.assert_called_once()
         assert response.status_code in (301, 302, 303)
         location = response.headers["Location"]
-        assert "paypal.com" in location
+        assert location == fake_session.url
         assert "abonne=1" not in location
+
+        # Regression : /checkout construit success_url avec un ?token=... deja
+        # present ; create_one_time_checkout ne doit pas y accoler un second '?'
+        # (sinon Flask lit tout apres le premier '?' comme la valeur du token,
+        # cf. bug "Commande introuvable" en prod).
+        called_success_url = mock_create.call_args.kwargs["success_url"]
+        assert called_success_url.count("?") == 1
+        assert "&session_id={CHECKOUT_SESSION_ID}" in called_success_url
