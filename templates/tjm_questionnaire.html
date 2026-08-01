@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    {% if ga_id %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ ga_id }}');
+    </script>
+    {% endif %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de TJM — Questionnaire | Omnipub</title>
+    <meta name="robots" content="noindex, follow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .aide { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-2xl mx-auto">
+
+        <header class="relative text-center mb-8">
+            <a href="{{ url_for('tjm.accueil') }}"
+               class="inline-flex items-center gap-2 absolute left-0 top-0 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-full transition">
+                ← Accueil
+            </a>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Simulateur de TJM</h1>
+        </header>
+
+        <!-- Barre de progression -->
+        <div class="mb-6">
+            <div class="flex justify-between text-xs text-slate-500 mb-1">
+                <span id="progress-label">Étape 1 / 3</span>
+                <span>Calcul instantané</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-2">
+                <div id="progress-bar" class="h-2 rounded-full transition-all" style="width:33%; background-color:#3F8078"></div>
+            </div>
+        </div>
+
+        {% if erreur %}
+        <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {{ erreur }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('tjm.calculer') }}" method="POST" class="space-y-6" novalidate>
+
+            <!-- ÉTAPE 1 : objectif de revenu -->
+            <div class="tjm-step card p-6">
+                <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">1. Votre objectif de revenu</h2>
+                <p class="text-sm text-slate-500 mb-4">Ce que vous souhaitez percevoir, avant impôt sur le revenu.</p>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700">Revenu net mensuel souhaité (€) *</label>
+                    <input type="number" name="revenu_net_mensuel" min="0" step="1" required
+                           value="{{ valeurs.revenu_net_mensuel }}"
+                           class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                    <p class="aide">Ex : 3000. Montant net que vous voulez toucher chaque mois payé.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nombre de mois à financer dans l'année *</label>
+                    <input type="number" name="mois_remuneres" min="1" max="12" step="1" required
+                           value="{{ valeurs.mois_remuneres }}"
+                           class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                    <p class="aide">Ex : 11. Le nombre de mois pendant lesquels vous devez vous rémunérer (congés compris ou non).</p>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2 : charges et régime -->
+            <div class="tjm-step card p-6" hidden>
+                <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">2. Vos charges et votre statut</h2>
+                <p class="text-sm text-slate-500 mb-4">Une estimation suffit pour ce simulateur.</p>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700">Charges professionnelles mensuelles (€) *</label>
+                    <input type="number" name="charges_mensuelles" min="0" step="1" required
+                           value="{{ valeurs.charges_mensuelles }}"
+                           class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                    <p class="aide">Ex : 400. Logiciels, assurances, local, comptable, matériel, etc.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Statut ou régime simplifié *</label>
+                    <select name="statut_juridique" required
+                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                        <option value="micro" {% if valeurs.statut_juridique == 'micro' %}selected{% endif %}>Micro-entreprise</option>
+                        <option value="societe" {% if valeurs.statut_juridique == 'societe' %}selected{% endif %}>Société (EURL, SASU...)</option>
+                    </select>
+                    <p class="aide">Ce choix modifie le taux de cotisations appliqué au calcul.</p>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 3 : disponibilité et temps facturable -->
+            <div class="tjm-step card p-6" hidden>
+                <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">3. Votre disponibilité réelle</h2>
+                <p class="text-sm text-slate-500 mb-4">Le temps réellement facturable est souvent surestimé : administratif, prospection et formation en font partie.</p>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700">Part du temps réellement facturable (%) *</label>
+                    <input type="number" name="temps_facturable" min="0" max="100" step="1" required
+                           value="{{ valeurs.temps_facturable }}"
+                           class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                    <p class="aide">Ex : 60. Le reste du temps est de la prospection, de l'administratif ou de la formation.</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700">Jours travaillés par semaine *</label>
+                    <input type="number" name="jours_par_semaine" min="1" max="7" step="1" required
+                           value="{{ valeurs.jours_par_semaine }}"
+                           class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                    <p class="aide">Ex : 5.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Semaines non travaillées par an *</label>
+                    <input type="number" name="semaines_conges" min="0" max="51" step="1" required
+                           value="{{ valeurs.semaines_conges }}"
+                           class="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2">
+                    <p class="aide">Ex : 5. Congés, maladie, creux d'activité prévisibles.</p>
+                </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="flex items-center justify-between">
+                <button type="button" id="btn-precedent" hidden
+                        class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-6 rounded-full transition">
+                    Précédent
+                </button>
+                <div class="flex-1"></div>
+                <button type="button" id="btn-continuer"
+                        class="text-white font-bold py-3 px-8 rounded-full shadow transition transform hover:scale-105"
+                        style="background-color:#3F8078">
+                    Continuer
+                </button>
+                <button type="submit" id="btn-valider" hidden
+                        class="text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105"
+                        style="background-color:#3F8078">
+                    Voir mon résultat
+                </button>
+            </div>
+
+            <p class="text-xs text-center text-slate-400">
+                Estimation pédagogique : ce simulateur ne remplace pas un conseil fiscal ou comptable personnalisé.
+            </p>
+        </form>
+    </div>
+
+<script>
+(function () {
+    var steps = document.querySelectorAll('.tjm-step');
+    var current = 0;
+
+    var progressBar = document.getElementById('progress-bar');
+    var progressLabel = document.getElementById('progress-label');
+    var btnPrecedent = document.getElementById('btn-precedent');
+    var btnContinuer = document.getElementById('btn-continuer');
+    var btnValider = document.getElementById('btn-valider');
+
+    function showStep(index) {
+        steps.forEach(function (step, i) { step.hidden = i !== index; });
+        progressBar.style.width = Math.round(((index + 1) / steps.length) * 100) + '%';
+        progressLabel.textContent = 'Étape ' + (index + 1) + ' / ' + steps.length;
+        btnPrecedent.hidden = index === 0;
+        btnContinuer.hidden = index === steps.length - 1;
+        btnValider.hidden = index !== steps.length - 1;
+    }
+
+    function stepEstValide(index) {
+        var champs = steps[index].querySelectorAll('input, select');
+        for (var i = 0; i < champs.length; i++) {
+            if (!champs[i].reportValidity()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    btnContinuer.addEventListener('click', function () {
+        if (!stepEstValide(current)) return;
+        current = Math.min(current + 1, steps.length - 1);
+        showStep(current);
+    });
+
+    btnPrecedent.addEventListener('click', function () {
+        current = Math.max(current - 1, 0);
+        showStep(current);
+    });
+
+    showStep(current);
+})();
+</script>
+</body>
+</html>

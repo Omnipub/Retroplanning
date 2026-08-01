@@ -58,6 +58,10 @@ app.register_blueprint(billing_bp)
 from routes_billing import check_access_or_redirect # noqa: E402
 from billing import record_usage, create_one_time_checkout # noqa: E402
 from routes_billing import SITE_URL as BILLING_SITE_URL # noqa: E402
+# --- Simulateur de TJM : voir cahier des charges "simulateur_tjm_v1" ---
+from models_tjm import SimulationTJM  # noqa: E402,F401
+from routes_tjm import tjm_bp  # noqa: E402
+app.register_blueprint(tjm_bp)
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -665,6 +669,9 @@ def robots():
         "Disallow: /success",
         "Disallow: /facture",
         "Disallow: /download",
+        "Disallow: /tjm/calculer",
+        "Disallow: /tjm/resultats",
+        "Disallow: /tjm/rapport",
         "",
         "Sitemap: " + SITE_URL + "/sitemap.xml",
         "",
@@ -687,6 +694,7 @@ def sitemap():
         (SITE_URL + "/", "weekly", "1.0"),
         (SITE_URL + "/formulaire", "monthly", "0.8"),
         (SITE_URL + "/blog", "weekly", "0.9"),
+        (SITE_URL + "/tjm", "monthly", "0.8"),
     ]
 
     try:
