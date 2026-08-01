@@ -20,7 +20,6 @@ import urllib.parse
 
 app = Flask(__name__)
 
-PAYPAL_EMAIL = "commercial@omnipub.net"
 CONTACT_EMAIL = "contact@retroplanning.eu"
 PRIX_HT = 2.00
 PRIX_TTC = round(PRIX_HT * 1.20, 2)
