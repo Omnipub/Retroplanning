@@ -88,6 +88,35 @@ def create_subscription_checkout(email, plan, success_url, cancel_url):
     return session
 
 
+def get_checkout_session(session_id):
+    """Recupere une session Stripe Checkout par son ID (transmis par Stripe dans le
+    redirect de succes). Retourne None si l'ID est vide ou si l'appel Stripe echoue,
+    pour ne jamais bloquer l'affichage de la page de succes sur un souci reseau/API."""
+    if not session_id:
+        return None
+    try:
+        return stripe.checkout.Session.retrieve(session_id)
+    except stripe.error.StripeError:
+        return None
+
+
+def get_invoice_url_for_session(session_obj):
+    """A partir d'une session Checkout deja recuperee (mode='payment'), retourne
+    l'URL de la facture Stripe generee automatiquement (invoice_creation active dans
+    create_one_time_checkout), ou None si indisponible. C'est la seule source de
+    verite pour le montant facture : on n'a plus de generation de facture "maison"."""
+    if not session_obj:
+        return None
+    invoice_id = _sget(session_obj, "invoice")
+    if not invoice_id:
+        return None
+    try:
+        invoice = stripe.Invoice.retrieve(invoice_id)
+    except stripe.error.StripeError:
+        return None
+    return _sget(invoice, "hosted_invoice_url")
+
+
 def create_customer_portal_session(stripe_customer_id, return_url):
     """Lien vers le portail Stripe (facturation, resiliation en libre-service, sans compte
     a creer sur le site : gere entierement par Stripe)."""

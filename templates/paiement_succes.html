@@ -33,6 +33,16 @@ body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
        style="background-color:#3F8078">
       Créer mon rétroplanning
     </a>
+    {% if is_subscription %}
+    <form method="POST" action="/mon-compte" class="mt-6 flex flex-col items-center gap-2">
+      <label class="text-xs text-slate-500">Gérer mon abonnement (résiliation, factures)</label>
+      <div class="flex gap-2 w-full max-w-xs">
+        <input type="email" name="email" required value="{{ email or '' }}" placeholder="Votre email"
+               class="flex-1 rounded-md border-slate-300 border p-2 text-sm">
+        <button type="submit" class="text-white font-bold px-4 rounded-full text-sm" style="background-color:#3F8078">OK</button>
+      </div>
+    </form>
+    {% endif %}
     <p class="text-slate-400 text-xs mt-6">
       Un souci avec votre paiement ? <a href="mailto:{{ contact_email }}" class="underline">Contactez-nous</a>.
     </p>

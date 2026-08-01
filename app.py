@@ -4,12 +4,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 from datetime import datetime
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_RIGHT, TA_CENTER
 from flask_sqlalchemy import SQLAlchemy
 import os
 import uuid
@@ -23,7 +17,6 @@ app = Flask(__name__)
 CONTACT_EMAIL = "contact@retroplanning.eu"
 PRIX_HT = 2.00
 PRIX_TTC = round(PRIX_HT * 1.20, 2)
-TVA = round(PRIX_TTC - PRIX_HT, 2)
 SITE_URL = "https://www.retroplanning.eu"
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
@@ -55,21 +48,10 @@ app.register_blueprint(billing_bp)
 # Acces direct au generateur pour un email d'abonne actif (bypass paiement) :
 # voir routes_billing.check_access_or_redirect / billing.get_access_status / billing.record_usage
 from routes_billing import check_access_or_redirect # noqa: E402
-from billing import record_usage, create_one_time_checkout # noqa: E402
+from billing import record_usage, create_one_time_checkout, get_checkout_session, get_invoice_url_for_session # noqa: E402
 from routes_billing import SITE_URL as BILLING_SITE_URL # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
-
-VENDEUR = {
-    "nom": "OMNIPUB",
-    "adresse": "Parc Mermoz - 199 rue Helene Boucher",
-    "cp": "34170",
-    "ville": "Castelnau-le-Lez",
-    "siret": "432 764 785 00023",
-    "tva": "FR01432764785",
-    "email": "contact@retroplanning.eu",
-    "tel": "04 99 13 63 33",
-}
 
 HOME_FAQS = [
     {
@@ -235,11 +217,6 @@ def get_order(token):
     return load_orders().get(token)
 
 
-def next_invoice_number():
-    count = sum(1 for order in load_orders().values() if order.get("paid")) + 1
-    return f"FAC-{datetime.now().year}-{count:04d}"
-
-
 def get_steps_from_form(form):
     steps = []
     for index in range(1, 5):
@@ -314,54 +291,6 @@ def generate_png(nom_client, nom_evenement, steps, phone, email, web, footer_soc
     filepath = os.path.join("/tmp", filename)
     plt.savefig(filepath, dpi=200, bbox_inches="tight")
     plt.close()
-    return filepath
-
-
-def generate_facture(order, client_info, num_facture):
-    filepath = os.path.join("/tmp", f"facture_{num_facture}.pdf")
-    doc = SimpleDocTemplate(filepath, pagesize=A4, rightMargin=2 * cm, leftMargin=2 * cm, topMargin=2 * cm, bottomMargin=2 * cm)
-    green = colors.HexColor("#3F8078")
-    style = ParagraphStyle("base", fontSize=10, leading=14)
-
-    story = [
-        Paragraph("<b>OMNIPUB</b>", ParagraphStyle("vendor", fontSize=14, textColor=green)),
-        Paragraph(VENDEUR["adresse"], style),
-        Paragraph(f"{VENDEUR['cp']} {VENDEUR['ville']}", style),
-        Paragraph(f"SIRET : {VENDEUR['siret']}", style),
-        Paragraph(f"TVA : {VENDEUR['tva']}", style),
-        Spacer(1, 0.8 * cm),
-        Paragraph(f"<b>FACTURE N {num_facture}</b>", ParagraphStyle("invoice", fontSize=16, textColor=green, alignment=TA_CENTER)),
-        Spacer(1, 0.5 * cm),
-        Paragraph("<b>Facture a :</b>", ParagraphStyle("heading", fontSize=11, textColor=green)),
-        Paragraph(f"<b>{client_info.get('raison_sociale', '')}</b>", style),
-        Paragraph(client_info.get("adresse", ""), style),
-        Paragraph(f"{client_info.get('cp', '')} {client_info.get('ville', '')}", style),
-        Spacer(1, 0.8 * cm),
-    ]
-
-    data = [
-        ["Designation", "Qte", "Prix HT", "TVA", "Total TTC"],
-        ["Retroplanning de production PNG HD", "1", f"{PRIX_HT:.2f} EUR", f"20 percent ({TVA:.2f} EUR)", f"{PRIX_TTC:.2f} EUR"],
-    ]
-
-    table = Table(data, colWidths=[8 * cm, 1.5 * cm, 2.5 * cm, 3 * cm, 2.5 * cm])
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), green),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CCCCCC")),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-    ]))
-
-    story += [
-        table,
-        Spacer(1, 0.5 * cm),
-        Paragraph(f"<b>Total TTC : {PRIX_TTC:.2f} EUR</b>", ParagraphStyle("total", fontSize=12, textColor=green, alignment=TA_RIGHT)),
-    ]
-    doc.build(story)
     return filepath
 
 
@@ -462,10 +391,22 @@ def success():
     save_order(token, order)
 
     # --- Stripe billing : decompte le quota mensuel si la generation vient d'un abonnement ---
-    if request.args.get("abonne") == "1" and order.get("email"):
+    is_subscriber = request.args.get("abonne") == "1"
+    if is_subscriber and order.get("email"):
         record_usage(order["email"])
 
-    return render_template("success.html", token=token, order=order, contact_email=CONTACT_EMAIL)
+    # Facture : uniquement pour un vrai paiement a l'acte, et sourcee depuis Stripe
+    # (facture generee automatiquement via invoice_creation) -- jamais de PDF "maison"
+    # recalcule localement, qui ne peut que diverger du montant reellement paye.
+    invoice_url = None
+    if not is_subscriber:
+        session_obj = get_checkout_session(request.args.get("session_id", ""))
+        invoice_url = get_invoice_url_for_session(session_obj)
+
+    return render_template(
+        "success.html", token=token, order=order, contact_email=CONTACT_EMAIL,
+        is_subscriber=is_subscriber, invoice_url=invoice_url,
+    )
 
 
 @app.route("/download/png/<token>")
@@ -474,24 +415,6 @@ def download_png(token):
     if not order or not order.get("paid"):
         return "Acces non autorise.", 403
     return send_file(order["png_path"], as_attachment=True, download_name=f"retroplanning_{order['nom_client'].replace(' ', '_')}.png")
-
-
-@app.route("/facture/<token>", methods=["GET", "POST"])
-def facture(token):
-    order = get_order(token)
-    if not order or not order.get("paid"):
-        return "Acces non autorise.", 403
-
-    if request.method == "POST":
-        client_info = {
-            key: request.form.get(key, "")
-            for key in ["raison_sociale", "adresse", "cp", "ville", "siret", "tva_intra"]
-        }
-        number = next_invoice_number()
-        pdf_path = generate_facture(order, client_info, number)
-        return send_file(pdf_path, as_attachment=True, download_name=f"facture_{number}.pdf")
-
-    return render_template("facture.html", token=token, order=order, contact_email=CONTACT_EMAIL)
 
 
 @app.route("/cancel")
@@ -673,7 +596,6 @@ def robots():
         "Disallow: /admin",
         "Disallow: /checkout",
         "Disallow: /success",
-        "Disallow: /facture",
         "Disallow: /download",
         "",
         "Sitemap: " + SITE_URL + "/sitemap.xml",

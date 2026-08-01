@@ -218,3 +218,80 @@ class TestNonSubscriberChargedViaStripe:
         called_success_url = mock_create.call_args.kwargs["success_url"]
         assert called_success_url.count("?") == 1
         assert "&session_id={CHECKOUT_SESSION_ID}" in called_success_url
+
+
+class TestSuccessPageInvoiceSourcing:
+    """Scenario 5 : /success ne genere plus de facture PDF "maison" (montant en dur).
+    Pour un paiement a l'acte reel, la facture affichee doit venir de Stripe
+    (hosted_invoice_url) ; pour un abonne en bypass (aucun paiement Stripe pour cette
+    generation), on ne doit jamais lui proposer une facture pretendant qu'il a paye
+    2,40EUR cette fois-ci -- seulement un lien vers son espace client (/mon-compte)."""
+
+    def test_one_time_payment_shows_real_stripe_invoice_link(self, client):
+        import re
+
+        email = "acte.reel@example.com"
+        fake_checkout_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-onetime")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_checkout_session) as mock_create:
+            client.post("/checkout", data=_checkout_payload(email), follow_redirects=False)
+
+        called_success_url = mock_create.call_args.kwargs["success_url"]
+        token = re.search(r"token=([0-9a-f]+)", called_success_url).group(1)
+
+        fake_stripe_session = {"invoice": "in_test_123"}
+        fake_invoice = {"hosted_invoice_url": "https://invoice.stripe.com/i/acct_test/in_test_123"}
+        with patch("billing.stripe.checkout.Session.retrieve", return_value=fake_stripe_session), \
+             patch("billing.stripe.Invoice.retrieve", return_value=fake_invoice):
+            response = client.get(f"/success?token={token}&session_id=cs_test_123")
+
+        body = response.get_data(as_text=True)
+        assert "https://invoice.stripe.com/i/acct_test/in_test_123" in body
+        assert "Voir mes factures" not in body  # pas le formulaire /mon-compte
+
+    def test_subscriber_bypass_never_shows_fake_invoice(self, app_module, client):
+        import re
+
+        email = "abonne.facture@example.com"
+        _make_active_subscriber(app_module, email, plan="starter_10")
+
+        response = client.post("/checkout", data=_checkout_payload(email), follow_redirects=False)
+        token = re.search(r"token=([0-9a-f]+)", response.headers["Location"]).group(1)
+
+        with patch("billing.stripe.checkout.Session.retrieve") as mock_retrieve:
+            success_response = client.get(f"/success?token={token}&abonne=1")
+            # Aucun appel Stripe pour retrouver une facture : cette generation n'a
+            # donne lieu a aucun paiement, ce serait fabriquer un montant errone.
+            mock_retrieve.assert_not_called()
+
+        body = success_response.get_data(as_text=True)
+        assert "Voir mes factures" in body
+        assert 'action="/mon-compte"' in body
+        assert email in body  # email pre-rempli dans le formulaire /mon-compte
+        assert "2.40" not in body and "2,40" not in body
+
+
+class TestPaiementSuccesAccountLink:
+    """Scenario 6 : la page de confirmation d'abonnement (/paiement/succes) doit
+    proposer un lien vers /mon-compte (portail Stripe, resiliation en 1 clic promise
+    sur /tarifs) uniquement pour un abonnement, jamais pour un paiement a l'acte."""
+
+    def test_subscription_checkout_shows_manage_subscription_form(self, client):
+        fake_session = {
+            "mode": "subscription",
+            "customer_email": "future.abonne@example.com",
+            "customer_details": {"email": "future.abonne@example.com"},
+        }
+        with patch("billing.stripe.checkout.Session.retrieve", return_value=fake_session):
+            response = client.get("/paiement/succes?session_id=cs_test_sub")
+
+        body = response.get_data(as_text=True)
+        assert 'action="/mon-compte"' in body
+        assert "future.abonne@example.com" in body
+
+    def test_one_time_checkout_hides_manage_subscription_form(self, client):
+        fake_session = {"mode": "payment", "customer_email": "acte.rapide@example.com"}
+        with patch("billing.stripe.checkout.Session.retrieve", return_value=fake_session):
+            response = client.get("/paiement/succes?session_id=cs_test_onetime")
+
+        body = response.get_data(as_text=True)
+        assert 'action="/mon-compte"' not in body
