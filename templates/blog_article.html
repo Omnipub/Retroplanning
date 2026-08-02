@@ -5,8 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">  
 <title>{{ article.meta_title }}</title>  
 <meta name="description" content="{{ article.meta_description }}">  
-<link rel="canonical" href="{{ site_url }}/blog/{{ article.slug }}">  
-<script src="https://cdn.tailwindcss.com"></script>  
+<link rel="canonical" href="{{ site_url }}/blog/{{ article.slug }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ article.titre|tojson }},
+  "description": {{ article.meta_description|tojson }},
+  "url": "{{ site_url }}/blog/{{ article.slug }}",
+  {% if article.published_at %}"datePublished": {{ article.published_at.isoformat()|tojson }},{% endif %}
+  "dateModified": {{ article.updated_at.isoformat()|tojson }},
+  "author": { "@type": "Organization", "name": "Omnipub" },
+  "publisher": { "@type": "Organization", "name": "Omnipub" }
+}
+</script>
+<link rel="icon" href="/static/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"><link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png"><link rel="stylesheet" href="/static/css/tailwind.css"><script defer src="/static/js/contact-links.js"></script>  
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">  
 <style>body{font-family:Inter,sans-serif;background:#f8fafc}.ab h2{font-size:1.55rem;font-weight:900;margin:2.3rem 0 .8rem}.ab h3{font-size:1.2rem;font-weight:800;margin:1.6rem 0 .6rem}.ab p{line-height:1.85;margin:1rem 0}.ab li{line-height:1.75;margin:.5rem 0}</style>  
 </head>  
@@ -17,7 +30,10 @@
 <article>  
 <p class="font-bold text-teal-700 text-sm">{{ article.categorie }}</p>  
 <h1 class="mt-3 text-4xl font-black">{{ article.titre }}</h1>  
-<p class="mt-5 text-slate-500 text-sm">{{ article.reading_minutes }} min de lecture</p>  
+<p class="mt-5 text-slate-500 text-sm">
+{% if article.published_at %}Publié le {{ article.published_at.strftime('%d/%m/%Y') }}{% endif %}
+{% if article.updated_at and article.published_at and article.updated_at.date() > article.published_at.date() %} · Mis à jour le {{ article.updated_at.strftime('%d/%m/%Y') }}{% endif %}
+ · {{ article.reading_minutes }} min de lecture</p>  
 {% if article.image_url %}<img src="{{ article.image_url }}" alt="{{ article.image_alt }}" class="mt-8 w-full max-h-96 object-cover rounded-2xl">{% endif %}  
 {% if article.resume %}<section class="mt-8 bg-teal-50 border border-teal-100 rounded-2xl p-6"><h2 class="font-black text-xl text-teal-900">En résumé</h2><p class="mt-2 leading-relaxed">{{ article.resume }}</p></section>{% endif %}  
 <div class="ab mt-8 text-slate-700">{% for kind,text in article.contenu|content_blocks %}{% if kind=='h2' %}<h2>{{ text }}</h2>{% elif kind=='h3' %}<h3>{{ text }}</h3>{% elif kind=='li' %}<li>{{ text }}</li>{% else %}<p>{{ text }}</p>{% endif %}{% endfor %}</div>  
@@ -27,6 +43,6 @@
 </article>  
 {% if related %}<section class="mt-16 pt-10 border-t"><h2 class="text-2xl font-black">Articles liés</h2><div class="mt-5 grid md:grid-cols-3 gap-4">{% for item in related %}<a href="/blog/{{ item.slug }}" class="bg-white border rounded-xl p-5"><p class="text-sm font-bold text-teal-700">{{ item.categorie }}</p><h3 class="mt-2 font-black">{{ item.titre }}</h3></a>{% endfor %}</div></section>{% endif %}  
 </main>  
-<footer class="bg-slate-900 text-slate-400 py-8 text-center text-sm"><a href="/blog" class="hover:text-white">Blog</a><p class="mt-3">Un service édité par Omnipub</p></footer>  
+<footer class="bg-slate-900 text-slate-400 py-8 text-center text-sm"><a href="/blog" class="hover:text-white">Blog</a><span class="mx-3">•</span><a href="/a-propos" class="hover:text-white">À propos</a><p class="mt-3">Un service édité par Omnipub</p></footer>  
 </body>  
 </html>  

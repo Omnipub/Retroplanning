@@ -18,6 +18,19 @@ CONTACT_EMAIL = "contact@retroplanning.eu"
 PRIX_HT = 2.00
 PRIX_TTC = round(PRIX_HT * 1.20, 2)
 SITE_URL = "https://www.retroplanning.eu"
+
+# Coordonnees publiques de l'editeur (page /a-propos, footer, balisage LocalBusiness).
+ENTREPRISE = {
+    "nom": "Omnipub",
+    "adresse": "Parc Mermoz - 199 rue Helene Boucher",
+    "cp": "34170",
+    "ville": "Castelnau-le-Lez",
+    "region": "Occitanie",
+    "pays": "FR",
+    "telephone": "+33499136333",
+    "telephone_affichage": "04 99 13 63 33",
+    "siret": "432 764 785 00023",
+}
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
     raise RuntimeError("La variable d'environnement ADMIN_PASSWORD doit etre definie")
@@ -84,7 +97,7 @@ HOME_FAQS = [
     },
     {
         "question": "Vais-je recevoir une facture ?",
-        "answer": "Oui. Après paiement, vous pouvez générer une facture PDF pour votre entreprise."
+        "answer": "Oui. Stripe génère automatiquement votre facture au moment du paiement ; vous y accédez depuis la page de confirmation ou, pour un abonnement, depuis votre espace client."
     },
     {
         "question": "Quelles sont les formules disponibles ?",
@@ -137,10 +150,14 @@ class Article(db.Model):
 
 @app.context_processor
 def inject_globals():
+    contact_user, _, contact_domain = CONTACT_EMAIL.partition("@")
     return {
         "ga_id": GA_ID,
         "contact_email": CONTACT_EMAIL,
-        "site_url": SITE_URL
+        "contact_user": contact_user,
+        "contact_domain": contact_domain,
+        "site_url": SITE_URL,
+        "entreprise": ENTREPRISE
     }
 
 
@@ -297,6 +314,11 @@ def generate_png(nom_client, nom_evenement, steps, phone, email, web, footer_soc
 @app.route("/")
 def landing():
     return render_template("landing.html", faqs=HOME_FAQS, contact_email=CONTACT_EMAIL)
+
+
+@app.route("/a-propos")
+def a_propos():
+    return render_template("a_propos.html")
 
 
 @app.route("/formulaire")
@@ -586,6 +608,55 @@ def admin_blog_delete(article_id):
 def admin_logout():
     session.pop("admin", None)
     return redirect("/")
+
+
+@app.route("/llms.txt")
+def llms_txt():
+    lines = [
+        "# Rétroplanning.eu",
+        "",
+        "> Générateur en ligne de rétroplannings événementiels et de production. "
+        "L'utilisateur renseigne des jalons clés et une date d'échéance ; l'outil "
+        "calcule et génère une frise chronologique visuelle, personnalisable aux "
+        "couleurs de sa charte graphique et exportable en PNG haute définition.",
+        "",
+        "Rétroplanning.eu s'adresse aux agences de communication, organisateurs "
+        "d'événements, chefs de projet et particuliers qui doivent visualiser les "
+        "étapes clés menant à une date de livraison ou d'événement (mariage, salon "
+        "professionnel, lancement de produit, déménagement, travaux, recrutement, "
+        "événement associatif, soutenance de thèse).",
+        "",
+        "## Fonctionnement",
+        "",
+        "- Choix d'un modèle pré-rempli par type de projet, ou démarrage à vide, sur /modeles.",
+        "- Saisie du client, de l'événement, des étapes clés avec leurs dates, des "
+        "couleurs et du pied de page sur /formulaire.",
+        "- Génération immédiate d'un export PNG haute résolution.",
+        "",
+        "## Tarifs",
+        "",
+        "- À l'acte : 2,40€ TTC, un rétroplanning, export PNG immédiat.",
+        "- Starter 10 : 11,88€ TTC par mois, jusqu'à 10 rétroplannings par mois.",
+        "- Illimité : 23,88€ TTC par mois, rétroplannings illimités.",
+        "- Paiement sécurisé via Stripe, résiliation en libre-service à tout moment.",
+        "",
+        "## Pages principales",
+        "",
+        "- [Accueil](" + SITE_URL + "/) : présentation de l'outil et des tarifs.",
+        "- [Choix du modèle](" + SITE_URL + "/modeles) : modèles pré-remplis par type de projet.",
+        "- [Créer un rétroplanning](" + SITE_URL + "/formulaire) : formulaire de génération.",
+        "- [Tarifs](" + SITE_URL + "/tarifs) : détail des 3 formules.",
+        "- [Blog](" + SITE_URL + "/blog) : guides sur la gestion de projet événementiel et de production.",
+        "- [Gérer mon abonnement](" + SITE_URL + "/mon-compte) : portail client en libre-service.",
+        "- [À propos](" + SITE_URL + "/a-propos) : qui édite Rétroplanning.eu.",
+        "",
+        "## Éditeur",
+        "",
+        "Rétroplanning.eu est édité par Omnipub (" + ENTREPRISE["ville"] + ", France). "
+        "Contact : " + CONTACT_EMAIL + ".",
+        "",
+    ]
+    return app.response_class("\n".join(lines), mimetype="text/plain")
 
 
 @app.route("/robots.txt")

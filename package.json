@@ -1,0 +1,12 @@
+{
+  "name": "retroplanning-assets",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build du CSS Tailwind compile (remplace la CDN cdn.tailwindcss.com en production).",
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
