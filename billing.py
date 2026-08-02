@@ -55,9 +55,17 @@ def _with_session_id(success_url):
     return success_url + separator + "session_id={CHECKOUT_SESSION_ID}"
 
 
-def create_one_time_checkout(email, success_url, cancel_url):
+def create_one_time_checkout(email, success_url, cancel_url, extra_metadata=None):
     """Paiement a l'acte, 2EUR TTC. Pas de compte necessaire au sens strict :
-    Stripe cree/retrouve un Customer via l'email, mais aucun mot de passe n'est demande."""
+    Stripe cree/retrouve un Customer via l'email, mais aucun mot de passe n'est demande.
+
+    extra_metadata (optionnel) : fusionne dans les metadata de la session, par
+    exemple le token de commande locale -- permet a /success de verifier que la
+    session Stripe payee correspond bien a CETTE commande, et pas de reutiliser
+    un session_id d'un paiement legitime pour debloquer d'autres commandes."""
+    metadata = {"type": "one_time"}
+    if extra_metadata:
+        metadata.update(extra_metadata)
     session = stripe.checkout.Session.create(
         mode="payment",
         customer_email=email,
@@ -65,7 +73,7 @@ def create_one_time_checkout(email, success_url, cancel_url):
         invoice_creation={"enabled": True},  # genere automatiquement une facture PDF
         success_url=_with_session_id(success_url),
         cancel_url=cancel_url,
-        metadata={"type": "one_time"},
+        metadata=metadata,
     )
     return session
 
