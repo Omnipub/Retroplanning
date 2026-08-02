@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Classes utilitaires pour la couleur de marque (#3F8078), utilisees a la
+   place des style="color:#3F8078" / background-color:#3F8078 statiques qui
+   apparaissaient dans plusieurs templates. Les styles inline restent
+   uniquement la ou ils sont modifies dynamiquement par le JS de
+   personnalisation (formulaire de generation, apercu des couleurs choisies
+   par le client). */
+@layer components {
+  .brand-text {
+    color: #3F8078;
+  }
+  .brand-bg {
+    background-color: #3F8078;
+  }
+  .brand-border {
+    border-color: #3F8078;
+  }
+  .icon-inline {
+    display: inline-block;
+    vertical-align: -1px;
+    margin-right: 4px;
+  }
+}

@@ -16,7 +16,7 @@
 
     <meta name="google-site-verification" content="ZAvgtMaHQpk0rB6eFn7jSpq2Hd7Lw7bvHDbAuo7J50E">
 
-    <title>Créer un Rétroplanning de Production en Ligne | Rétroplanning.eu</title>
+    <title>Créer un Rétroplanning en Ligne | Rétroplanning.eu</title>
 
     <meta name="description" content="Générez un rétroplanning événementiel ou de production sur mesure en 2 minutes. Personnalisable aux couleurs de votre agence. Export PNG HD immédiat.">
 
@@ -42,7 +42,7 @@
     <meta name="twitter:description" content="Générez un rétroplanning événementiel personnalisé en quelques minutes.">  
     <meta name="twitter:image" content="https://objets-golf.com/Images/Blog_retroplanning/retroplanning-evenementiel-en-equipe-professionnelle.jpg">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/static/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"><link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png"><link rel="stylesheet" href="/static/css/tailwind.css"><script defer src="/static/js/contact-links.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
@@ -63,11 +63,31 @@
         "priceCurrency": "EUR",  
         "offerCount": "3"  
       },  
-      "creator": {  
-        "@type": "Organization",  
-        "name": "Omnipub"  
-      }  
-    }  
+      "creator": {
+        "@type": "Organization",
+        "name": "Omnipub"
+      }
+    }
+    </script>
+
+    <!-- Données structurées LocalBusiness : editeur du site -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": {{ entreprise.nom|tojson }},
+      "url": "{{ site_url }}/a-propos",
+      "email": {{ contact_email|tojson }},
+      "telephone": {{ entreprise.telephone|tojson }},
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": {{ entreprise.adresse|tojson }},
+        "postalCode": {{ entreprise.cp|tojson }},
+        "addressLocality": {{ entreprise.ville|tojson }},
+        "addressRegion": {{ entreprise.region|tojson }},
+        "addressCountry": {{ entreprise.pays|tojson }}
+      }
+    }
     </script>
 
     <!-- Données structurées FAQ pour Google et les moteurs IA -->  
@@ -129,9 +149,9 @@
                     Blog &amp; Guides  
                 </a>
 
-                <a href="mailto:{{ contact_email }}?subject=Demande%20d%27information%20R%C3%A9troplanning"  
-                   class="inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition">  
-                    Nous contacter  
+                <a href="#" class="js-contact-link inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition"
+                   data-user="{{ contact_user }}" data-domain="{{ contact_domain }}" data-subject="Demande%20d%27information%20R%C3%A9troplanning">
+                    Nous contacter
                 </a>
 
             </div>
@@ -152,28 +172,26 @@
 
   <!-- PAIEMENT A L'ACTE -->
   <div class="bg-white rounded-xl shadow-md p-6 flex flex-col">
-    <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">À l'acte</h2>
+    <h2 class="text-xl font-semibold mb-1 brand-text">À l'acte</h2>
     <p class="text-3xl font-bold text-slate-800 mb-1">2,00€ <span class="text-sm font-normal text-slate-500">HT</span></p>
     <p class="text-sm text-slate-500 mb-4">1 rétroplanning, export PNG HD immédiat</p>
     <a href="/modeles"
-       class="mt-auto block text-center w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105"
-       style="background-color:#3F8078">
+       class="mt-auto block text-center w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105 brand-bg">
       Créer mon rétroplanning
     </a>
   </div>
 
   <!-- STARTER 10 -->
-  <div class="bg-white rounded-xl shadow-md p-6 flex flex-col border-2" style="border-color:#3F8078">
-    <span class="text-xs font-bold uppercase tracking-wide mb-2" style="color:#3F8078">Le plus populaire</span>
-    <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">Starter 10</h2>
+  <div class="bg-white rounded-xl shadow-md p-6 flex flex-col border-2 brand-border">
+    <span class="text-xs font-bold uppercase tracking-wide mb-2 brand-text">Le plus populaire</span>
+    <h2 class="text-xl font-semibold mb-1 brand-text">Starter 10</h2>
     <p class="text-3xl font-bold text-slate-800 mb-1">9,90€ <span class="text-sm font-normal text-slate-500">HT / mois</span></p>
     <p class="text-sm text-slate-500 mb-4">10 rétroplannings par mois, résiliable à tout moment</p>
     <form action="/checkout/abonnement/starter_10" method="POST" class="mt-auto space-y-3">
       <input type="email" name="email" required placeholder="Votre email"
              class="block w-full rounded-md border-slate-300 border p-2 text-sm">
       <button type="submit"
-              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105"
-              style="background-color:#3F8078">
+              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105 brand-bg">
         S'abonner
       </button>
     </form>
@@ -181,15 +199,14 @@
 
   <!-- ILLIMITE -->
   <div class="bg-white rounded-xl shadow-md p-6 flex flex-col">
-    <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">Illimité</h2>
+    <h2 class="text-xl font-semibold mb-1 brand-text">Illimité</h2>
     <p class="text-3xl font-bold text-slate-800 mb-1">19,90€ <span class="text-sm font-normal text-slate-500">HT / mois</span></p>
     <p class="text-sm text-slate-500 mb-4">Rétroplannings illimités, résiliable à tout moment</p>
     <form action="/checkout/abonnement/illimite" method="POST" class="mt-auto space-y-3">
       <input type="email" name="email" required placeholder="Votre email"
              class="block w-full rounded-md border-slate-300 border p-2 text-sm">
       <button type="submit"
-              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105"
-              style="background-color:#3F8078">
+              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105 brand-bg">
         S'abonner
       </button>
     </form>
@@ -251,10 +268,26 @@
                     vous évitez les retards et garantissez une exécution maîtrisée pour vos clients.  
                 </p>
 
-                <p>  
-                    Que vous soyez <strong>agence de communication, organisateur d'événements, imprimeur  
-                    ou chef de projet</strong>, notre outil vous permet de produire un document professionnel,  
-                    aux couleurs de votre charte, prêt à être partagé avec votre équipe ou votre client.  
+                <p>
+                    Que vous soyez <strong>agence de communication, organisateur d'événements, imprimeur
+                    ou chef de projet</strong>, notre outil vous permet de produire un document professionnel,
+                    aux couleurs de votre charte, prêt à être partagé avec votre équipe ou votre client.
+                </p>
+
+                <p>
+                    Concrètement, la création d'un rétroplanning se fait en trois étapes : vous choisissez un
+                    modèle adapté à votre projet (ou partez d'une page vierge), vous renseignez vos jalons clés
+                    avec leurs dates, puis vous personnalisez les couleurs et le pied de page avant d'exporter
+                    la frise chronologique en PNG haute résolution — prête à intégrer dans une présentation,
+                    un devis ou un brief interne, sans logiciel de mise en page à installer.
+                </p>
+
+                <p>
+                    Le générateur propose des modèles de rétroplanning pré-remplis pour huit types de projets
+                    courants : mariage, salon professionnel, lancement de produit, déménagement, travaux et
+                    rénovation, recrutement, événement associatif ou caritatif, et soutenance de thèse ou de
+                    mémoire. Chaque modèle propose des étapes clés déjà en place, entièrement modifiables,
+                    pour démarrer plus vite qu'avec une page blanche.
                 </p>
 
             </div>
@@ -336,21 +369,23 @@
                 Gérer mon abonnement
             </a>
 
-            <a href="mailto:{{ contact_email }}" class="text-teal-400 hover:underline">
+            <a href="/a-propos" class="text-teal-400 hover:underline">
+                À propos
+            </a>
+
+            <a href="#" class="js-contact-link text-teal-400 hover:underline" data-user="{{ contact_user }}" data-domain="{{ contact_domain }}">
                 Contact
             </a>
 
         </div>
 
-        <p class="mb-2">  
-            Un service édité par <strong>Omnipub</strong>  
+        <p class="mb-2">
+            Un service édité par <strong>Omnipub</strong> — {{ entreprise.cp }} {{ entreprise.ville }}
         </p>
 
-        <p class="text-sm">  
-            Contact :  
-            <a href="mailto:{{ contact_email }}" class="text-teal-400 hover:underline">  
-                {{ contact_email }}  
-            </a>  
+        <p class="text-sm">
+            Contact :
+            <a href="#" class="js-contact-link text-teal-400 hover:underline" data-user="{{ contact_user }}" data-domain="{{ contact_domain }}" data-show-address="true">nous écrire</a>
         </p>
 
     </footer>

@@ -13,7 +13,7 @@ gtag('config', '{{ ga_id }}');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nos offres — Rétroplanning.eu</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="icon" href="/static/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"><link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png"><link rel="stylesheet" href="/static/css/tailwind.css"><script defer src="/static/js/contact-links.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -40,28 +40,26 @@ Choisissez la formule adaptée à votre usage · Paiement sécurisé via Stripe
 
   <!-- PAIEMENT A L'ACTE -->
   <div class="card p-6 flex flex-col">
-    <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">À l'acte</h2>
+    <h2 class="text-xl font-semibold mb-1 brand-text">À l'acte</h2>
     <p class="text-3xl font-bold text-slate-800 mb-1">2,00€ <span class="text-sm font-normal text-slate-500">HT</span></p>
     <p class="text-sm text-slate-500 mb-4">1 rétroplanning, export PNG HD immédiat</p>
     <a href="/modeles"
-       class="mt-auto block text-center w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105"
-       style="background-color:#3F8078">
+       class="mt-auto block text-center w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105 brand-bg">
       Créer mon rétroplanning
     </a>
   </div>
 
   <!-- STARTER 10 -->
-  <div class="card p-6 flex flex-col border-2" style="border-color:#3F8078">
-    <span class="text-xs font-bold uppercase tracking-wide mb-2" style="color:#3F8078">Le plus populaire</span>
-    <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">Starter 10</h2>
+  <div class="card p-6 flex flex-col border-2 brand-border">
+    <span class="text-xs font-bold uppercase tracking-wide mb-2 brand-text">Le plus populaire</span>
+    <h2 class="text-xl font-semibold mb-1 brand-text">Starter 10</h2>
     <p class="text-3xl font-bold text-slate-800 mb-1">9,90€ <span class="text-sm font-normal text-slate-500">HT / mois</span></p>
     <p class="text-sm text-slate-500 mb-4">10 rétroplannings par mois, résiliable à tout moment</p>
     <form action="/checkout/abonnement/starter_10" method="POST" class="mt-auto space-y-3">
       <input type="email" name="email" required placeholder="Votre email"
              class="block w-full rounded-md border-slate-300 border p-2 text-sm">
       <button type="submit"
-              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105"
-              style="background-color:#3F8078">
+              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105 brand-bg">
         S'abonner
       </button>
     </form>
@@ -69,15 +67,14 @@ Choisissez la formule adaptée à votre usage · Paiement sécurisé via Stripe
 
   <!-- ILLIMITE -->
   <div class="card p-6 flex flex-col">
-    <h2 class="text-xl font-semibold mb-1" style="color:#3F8078">Illimité</h2>
+    <h2 class="text-xl font-semibold mb-1 brand-text">Illimité</h2>
     <p class="text-3xl font-bold text-slate-800 mb-1">19,90€ <span class="text-sm font-normal text-slate-500">HT / mois</span></p>
     <p class="text-sm text-slate-500 mb-4">Rétroplannings illimités, résiliable à tout moment</p>
     <form action="/checkout/abonnement/illimite" method="POST" class="mt-auto space-y-3">
       <input type="email" name="email" required placeholder="Votre email"
              class="block w-full rounded-md border-slate-300 border p-2 text-sm">
       <button type="submit"
-              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105"
-              style="background-color:#3F8078">
+              class="w-full text-white font-bold py-3 rounded-full shadow transition hover:scale-105 brand-bg">
         S'abonner
       </button>
     </form>
@@ -86,7 +83,7 @@ Choisissez la formule adaptée à votre usage · Paiement sécurisé via Stripe
 </div>
 
 <p class="text-center text-slate-400 text-xs mt-8">
-<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:4px;"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Paiement sécurisé par Stripe · Facture automatique · Résiliation en 1 clic depuis <a href="/mon-compte" class="underline hover:text-slate-600">votre espace client</a>
+<svg class="icon-inline" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Paiement sécurisé par Stripe · Facture automatique · Résiliation en 1 clic depuis <a href="/mon-compte" class="underline hover:text-slate-600">votre espace client</a>
 </p>
 </div>
 </body>
