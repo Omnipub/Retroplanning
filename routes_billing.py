@@ -16,6 +16,12 @@ from billing import (
     _sget,
 )
 from models_billing import Customer
+from email_verification import (
+    cookie_confirms_email,
+    create_and_send_code,
+    set_verified_email_cookie,
+    verify_code,
+)
 
 billing_bp = Blueprint("billing", __name__)
 
@@ -102,9 +108,10 @@ def paiement_succes():
 @billing_bp.route("/mon-compte", methods=["GET", "POST"])
 def mon_compte():
     """GET : page permanente (lien accessible depuis le footer et /tarifs) avec un
-    formulaire email. POST : cree la session du portail client Stripe et y redirige
-    -- c'est la seule fois ou l'abonne a besoin de saisir son email, Stripe gere
-    ensuite la facturation et la resiliation en libre-service."""
+    formulaire email. POST : accorde l'acces au portail client Stripe (factures,
+    moyen de paiement, resiliation) -- mais seulement une fois prouve que la
+    personne possede bien cet email (code envoye par email), sinon n'importe qui
+    connaissant l'adresse d'un abonne accederait a son portail de facturation."""
     if request.method == "GET":
         return render_template("mon_compte.html", error=None)
 
@@ -116,11 +123,38 @@ def mon_compte():
             error="Aucun compte abonné trouvé pour cet email.",
         ), 404
 
+    if cookie_confirms_email(email):
+        portal_session = create_customer_portal_session(
+            stripe_customer_id=customer.stripe_customer_id,
+            return_url=SITE_URL + "/",
+        )
+        return redirect(portal_session.url, code=303)
+
+    code = request.form.get("code", "").strip()
+    if request.form.get("action") == "renvoyer" or not code:
+        status = create_and_send_code(email)
+        return render_template("mon_compte.html", error=None, email=email, awaiting_code=True, status=status)
+
+    ok, reason = verify_code(email, code)
+    if not ok:
+        messages = {
+            "wrong_code": "Code incorrect.",
+            "expired": "Ce code a expiré, demandez-en un nouveau.",
+            "too_many_attempts": "Trop de tentatives avec ce code, demandez-en un nouveau.",
+            "no_pending_code": "Aucun code en attente, demandez-en un nouveau.",
+        }
+        return render_template(
+            "mon_compte.html", email=email, awaiting_code=True,
+            error=messages.get(reason, "Erreur de vérification."),
+        ), 401
+
     portal_session = create_customer_portal_session(
         stripe_customer_id=customer.stripe_customer_id,
         return_url=SITE_URL + "/",
     )
-    return redirect(portal_session.url, code=303)
+    response = redirect(portal_session.url, code=303)
+    set_verified_email_cookie(response, email)
+    return response
 
 
 # ---------------------------------------------------------------------------

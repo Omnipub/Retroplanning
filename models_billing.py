@@ -74,3 +74,19 @@ class OneTimePayment(db.Model):
     amount_ttc = db.Column(db.Numeric(10, 2), nullable=False)
     invoice_url = db.Column(db.String(512), nullable=True)  # lien facture Stripe (hosted_invoice_url ou receipt)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class EmailVerification(db.Model):
+    """Code a usage unique envoye par email, pour confirmer que la personne qui
+    saisit un email possede bien cette boite mail -- avant d'accorder le bypass
+    paiement (abonne actif) sur /checkout, ou l'acces au portail client sur
+    /mon-compte. Voir email_verification.py pour la logique associee."""
+    __tablename__ = "email_verifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), nullable=False, index=True)
+    code_hash = db.Column(db.String(64), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    attempts = db.Column(db.Integer, nullable=False, default=0)
+    used_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)

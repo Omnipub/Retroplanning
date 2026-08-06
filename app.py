@@ -55,14 +55,25 @@ app.register_blueprint(templates_bp)
 # --- Stripe billing (facturation) : voir retroplanning-stripe/INTEGRATION.md ---
 # db est deja defini juste au-dessus : on importe les modeles ici (pour db.create_all())
 # et on enregistre le blueprint des routes de facturation Stripe.
-from models_billing import Customer, Subscription, UsageRecord, OneTimePayment  # noqa: E402,F401
+from models_billing import Customer, Subscription, UsageRecord, OneTimePayment, EmailVerification  # noqa: E402,F401
 from routes_billing import billing_bp  # noqa: E402
 app.register_blueprint(billing_bp)
 # Acces direct au generateur pour un email d'abonne actif (bypass paiement) :
 # voir routes_billing.check_access_or_redirect / billing.get_access_status / billing.record_usage
 from routes_billing import check_access_or_redirect # noqa: E402
-from billing import record_usage, create_one_time_checkout, get_checkout_session, get_invoice_url_for_session # noqa: E402
+from billing import record_usage, create_one_time_checkout, get_checkout_session, get_invoice_url_for_session, _sget # noqa: E402
 from routes_billing import SITE_URL as BILLING_SITE_URL # noqa: E402
+# Verification qu'un email saisi est bien possede par la personne (OTP) : voir
+# email_verification.py -- protege le bypass paiement abonne sur /checkout.
+from email_verification import (  # noqa: E402
+    create_and_send_code,
+    verify_code,
+    cookie_confirms_email,
+    set_verified_email_cookie,
+)
+# Email de confirmation apres generation reussie (lien d'acces + instructions,
+# pas seulement la facture) : voir notifications.py.
+from notifications import send_order_confirmation_email  # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -355,6 +366,7 @@ def checkout():
     order = {
         "token": token,
         "paid": False,
+        "access_verified": False,
         "nom_client": request.form.get("client", ""),
         "nom_evenement": request.form.get("evenement", ""),
         "phone": request.form.get("phone", ""),
@@ -368,17 +380,58 @@ def checkout():
     }
     save_order(token, order)
 
-    # --- Stripe billing : un email d'abonne actif genere directement, sans repasser par un paiement ---
+    # --- Stripe billing : un email d'abonne actif genere sans repasser par un
+    # paiement -- mais seulement une fois prouve que cette personne possede bien
+    # cet email (code envoye par email), sinon n'importe qui connaissant
+    # l'adresse d'un abonne consommerait gratuitement ses credits.
     email = order.get("email", "").strip()
     if email and check_access_or_redirect(email) is None:
-        return redirect(url_for("success", token=token, abonne="1"))
+        if cookie_confirms_email(email):
+            order["access_verified"] = True
+            save_order(token, order)
+            return redirect(url_for("success", token=token, abonne="1"))
+        return redirect(url_for("verifier", token=token))
 
     session = create_one_time_checkout(
         email=email,
         success_url=BILLING_SITE_URL + f"/success?token={token}",
         cancel_url=BILLING_SITE_URL + "/cancel",
+        extra_metadata={"token": token},
     )
     return redirect(session.url, code=303)
+
+
+@app.route("/verifier", methods=["GET", "POST"])
+def verifier():
+    token = request.values.get("token", "")
+    order = get_order(token)
+    if not order or not order.get("email"):
+        return "Commande introuvable.", 404
+
+    email = order["email"].strip()
+
+    if request.method == "GET" or request.form.get("action") == "renvoyer":
+        status = create_and_send_code(email)
+        return render_template("verifier.html", token=token, email=email, error=None, status=status)
+
+    ok, reason = verify_code(email, request.form.get("code", ""))
+    if not ok:
+        messages = {
+            "wrong_code": "Code incorrect.",
+            "expired": "Ce code a expiré, demandez-en un nouveau.",
+            "too_many_attempts": "Trop de tentatives avec ce code, demandez-en un nouveau.",
+            "no_pending_code": "Aucun code en attente, demandez-en un nouveau.",
+        }
+        return render_template(
+            "verifier.html", token=token, email=email,
+            error=messages.get(reason, "Erreur de vérification."), status=None,
+        )
+
+    order["access_verified"] = True
+    save_order(token, order)
+    response = redirect(url_for("success", token=token, abonne="1"))
+    set_verified_email_cookie(response, email)
+    return response
 
 
 @app.route("/success")
@@ -388,6 +441,32 @@ def success():
     if not order:
         return "Commande introuvable.", 404
 
+    is_subscriber = request.args.get("abonne") == "1"
+    invoice_url = None
+
+    if is_subscriber:
+        # L'acces abonne n'est jamais accorde sur la seule foi du parametre
+        # d'URL : il doit avoir ete positionne par /verifier (code confirme)
+        # ou par le cookie "navigateur deja verifie" repris dans /checkout.
+        if not order.get("access_verified"):
+            return "Accès non autorisé.", 403
+    else:
+        # Paiement a l'acte : on verifie reellement aupres de Stripe que CETTE
+        # session a ete payee, et qu'elle correspond bien a CETTE commande (le
+        # token est dans les metadata Stripe) -- pas de confiance dans l'URL,
+        # jamais de generation sans paiement confirme.
+        session_obj = get_checkout_session(request.args.get("session_id", ""))
+        payment_status = _sget(session_obj, "payment_status") if session_obj else None
+        session_token = _sget(_sget(session_obj, "metadata") or {}, "token") if session_obj else None
+        if payment_status != "paid" or session_token != token:
+            return "Accès non autorisé.", 403
+        order["access_verified"] = True
+        invoice_url = get_invoice_url_for_session(session_obj)
+
+    # "paid" est deja vrai si la personne revisite /success (retour navigateur,
+    # rafraichissement, lien enregistre) : on s'en sert pour n'envoyer l'email
+    # de confirmation qu'une seule fois, a la generation initiale.
+    already_confirmed = order.get("paid", False)
     order["paid"] = True
     steps = []
 
@@ -413,17 +492,17 @@ def success():
     save_order(token, order)
 
     # --- Stripe billing : decompte le quota mensuel si la generation vient d'un abonnement ---
-    is_subscriber = request.args.get("abonne") == "1"
     if is_subscriber and order.get("email"):
         record_usage(order["email"])
 
-    # Facture : uniquement pour un vrai paiement a l'acte, et sourcee depuis Stripe
-    # (facture generee automatiquement via invoice_creation) -- jamais de PDF "maison"
-    # recalcule localement, qui ne peut que diverger du montant reellement paye.
-    invoice_url = None
-    if not is_subscriber:
-        session_obj = get_checkout_session(request.args.get("session_id", ""))
-        invoice_url = get_invoice_url_for_session(session_obj)
+    # Email de confirmation avec lien d'acces + instructions (pas seulement la
+    # facture) -- envoye une seule fois, a la generation initiale du PNG.
+    if not already_confirmed:
+        send_order_confirmation_email(
+            order.get("email"),
+            download_url=SITE_URL + url_for("download_png", token=token),
+            invoice_url=invoice_url,
+        )
 
     return render_template(
         "success.html", token=token, order=order, contact_email=CONTACT_EMAIL,

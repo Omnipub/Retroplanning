@@ -13,7 +13,8 @@
 {% endif %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon compte — Rétroplanning.eu</title>
+    <meta name="robots" content="noindex">
+    <title>Vérification — Rétroplanning.eu</title>
     <link rel="icon" href="/static/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"><link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png"><link rel="stylesheet" href="/static/css/tailwind.css"><script defer src="/static/js/contact-links.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -22,47 +23,32 @@
 </head>
 <body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-xl shadow-md max-w-md w-full text-center">
-        <a href="/" class="inline-flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-full transition text-sm mb-6">
-            ← Accueil
-        </a>
-        <h1 class="text-2xl font-bold text-slate-800 mb-2">Gérer mon abonnement</h1>
-
-        {% if not awaiting_code %}
-        <p class="text-slate-600 mb-6">
-            Entrez l'email utilisé lors de votre abonnement pour accéder à votre portail Stripe :
-            factures, moyen de paiement, résiliation en libre-service.
-        </p>
-
-        {% if error %}
-        <p class="text-red-600 text-sm mb-4">{{ error }}</p>
-        {% endif %}
-
-        <form method="POST" action="/mon-compte" class="space-y-4">
-            <input type="email" name="email" required placeholder="Votre email"
-                   class="block w-full rounded-md border-slate-300 border p-2">
-            <button type="submit" class="block w-full bg-teal-600 text-white font-bold py-3 rounded-lg shadow-md">
-                Accéder à mon espace client
-            </button>
-        </form>
-
-        {% else %}
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">Vérifiez votre email</h1>
 
         {% if status == "sent" %}
-        <p class="text-slate-600 mb-6">Un code à 6 chiffres a été envoyé à <strong>{{ email }}</strong>. Il expire dans 15 minutes.</p>
+        <p class="text-slate-600 mb-6">
+            Un code à 6 chiffres a été envoyé à <strong>{{ email }}</strong>. Il expire dans 15 minutes.
+        </p>
         {% elif status == "cooldown" %}
-        <p class="text-slate-600 mb-6">Un code a déjà été envoyé à <strong>{{ email }}</strong> il y a moins d'une minute — vérifiez votre boîte de réception (et vos spams).</p>
+        <p class="text-slate-600 mb-6">
+            Un code a déjà été envoyé à <strong>{{ email }}</strong> il y a moins d'une minute — vérifiez votre boîte de réception (et vos spams).
+        </p>
         {% elif status == "error" %}
-        <p class="text-amber-600 mb-6">L'envoi du code a rencontré un problème. Réessayez dans quelques instants.</p>
+        <p class="text-amber-600 mb-6">
+            L'envoi du code a rencontré un problème. Réessayez dans quelques instants, ou contactez-nous si ça persiste.
+        </p>
         {% else %}
-        <p class="text-slate-600 mb-6">Entrez le code à 6 chiffres envoyé à <strong>{{ email }}</strong> pour confirmer que cette adresse vous appartient.</p>
+        <p class="text-slate-600 mb-6">
+            Entrez le code à 6 chiffres envoyé à <strong>{{ email }}</strong> pour confirmer que cette adresse vous appartient.
+        </p>
         {% endif %}
 
         {% if error %}
         <p class="text-red-600 text-sm mb-4">{{ error }}</p>
         {% endif %}
 
-        <form method="POST" action="/mon-compte" class="space-y-4">
-            <input type="hidden" name="email" value="{{ email }}">
+        <form method="POST" action="/verifier" class="space-y-4">
+            <input type="hidden" name="token" value="{{ token }}">
             <input type="text" name="code" required maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
                    autocomplete="one-time-code" placeholder="123456"
                    class="block w-full text-center text-2xl tracking-[0.5em] rounded-md border-slate-300 border p-3">
@@ -71,13 +57,13 @@
             </button>
         </form>
 
-        <form method="POST" action="/mon-compte" class="mt-4">
-            <input type="hidden" name="email" value="{{ email }}">
+        <form method="POST" action="/verifier" class="mt-4">
+            <input type="hidden" name="token" value="{{ token }}">
             <input type="hidden" name="action" value="renvoyer">
-            <button type="submit" class="text-sm text-slate-500 underline">Je n'ai pas reçu de code, renvoyer</button>
+            <button type="submit" class="text-sm text-slate-500 underline">
+                Je n'ai pas reçu de code, renvoyer
+            </button>
         </form>
-
-        {% endif %}
 
         <p class="mt-8 text-xs text-slate-400">Une question ? contactez-nous sur <a href="#" class="js-contact-link underline" data-user="{{ contact_user }}" data-domain="{{ contact_domain }}" data-show-address="true">nous écrire</a></p>
     </div>
