@@ -1,11 +1,15 @@
 # email_verification.py
 # Verification qu'une personne possede bien l'email qu'elle saisit, par code a
-# usage unique (OTP) envoye par email. Utilise a deux endroits :
+# usage unique (OTP) envoye par email. Utilise a trois endroits :
 #   - app.py /checkout : avant d'accorder le bypass paiement a un email associe
 #     a un abonnement actif (sinon n'importe qui connaissant cet email genere
 #     gratuitement, cf. incident de securite).
 #   - routes_billing.py /mon-compte : avant de donner acces au portail client
 #     Stripe (factures, moyen de paiement, resiliation) pour un email donne.
+#   - routes_billing.py /checkout/abonnement/<plan> : avant d'envoyer la personne
+#     payer un nouvel abonnement sur Stripe, pour ne pas initier de souscription
+#     (et donc de communications de facturation) au nom d'une adresse qui n'est
+#     pas la sienne.
 #
 # Variable d'environnement optionnelle :
 #   RESEND_API_KEY   -> cle API Resend (resend.com) pour l'envoi reel des emails.
@@ -159,3 +163,38 @@ def set_verified_email_cookie(response, email):
         samesite="Lax",
     )
     return response
+
+
+# ---------------------------------------------------------------------------
+# Jeton "abonnement en attente de verification" (routes_billing.py /checkout/abonnement)
+# ---------------------------------------------------------------------------
+# Contrairement a /checkout (formulaire principal), qui garde la commande complete
+# dans un fichier ORDERS_FILE et ne transporte qu'un token opaque en query string,
+# le flux d'abonnement n'a besoin de retenir que l'email et le plan choisi entre
+# le POST initial et la saisie du code -- pas besoin d'un nouveau stockage serveur :
+# un jeton signe (infalsifiable sans secret_key) suffit a transporter ces deux
+# informations sans jamais exposer l'email en clair dans l'URL.
+
+PENDING_SUBSCRIPTION_TOKEN_MAX_AGE = 30 * 60  # 30 minutes : largement suffisant pour saisir un code
+
+
+def _pending_subscription_serializer():
+    return URLSafeTimedSerializer(current_app.secret_key, salt="pending-subscription-checkout")
+
+
+def make_pending_subscription_token(email, plan):
+    """Encode email+plan dans un jeton signe et opaque, a transmettre a /verifier-abonnement."""
+    return _pending_subscription_serializer().dumps({"email": email.strip().lower(), "plan": plan})
+
+
+def read_pending_subscription_token(token):
+    """Decode un jeton produit par make_pending_subscription_token. Retourne None si le
+    jeton est absent, altere, ou expire (> PENDING_SUBSCRIPTION_TOKEN_MAX_AGE)."""
+    if not token:
+        return None
+    try:
+        return _pending_subscription_serializer().loads(
+            token, max_age=PENDING_SUBSCRIPTION_TOKEN_MAX_AGE
+        )
+    except (BadSignature, SignatureExpired):
+        return None

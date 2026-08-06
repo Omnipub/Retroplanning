@@ -477,17 +477,19 @@ class TestNoDuplicateSubscriptionCheckout:
 
         assert response.status_code == 409
 
-    def test_new_email_still_reaches_stripe_checkout(self, client):
+    def test_new_email_sent_to_verification_before_stripe(self, client):
+        """Depuis l'ajout de l'OTP au flux d'abonnement, un email jamais abonne
+        n'atteint plus Stripe directement : il doit d'abord prouver posseder
+        cet email via /verifier-abonnement (cf. TestSubscriptionCheckoutEmailVerification)."""
         email = "jamais.abonne.subscription@example.com"
-        fake_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-newsub")
-        with patch("billing.stripe.checkout.Session.create", return_value=fake_session) as mock_create:
+        with patch("billing.stripe.checkout.Session.create") as mock_create:
             response = client.post(
                 "/checkout/abonnement/starter_10", data={"email": email}, follow_redirects=False
             )
+            mock_create.assert_not_called()
 
-        mock_create.assert_called_once()
         assert response.status_code in (301, 302, 303)
-        assert response.headers["Location"] == fake_session.url
+        assert "/verifier-abonnement" in response.headers["Location"]
 
 
 class TestSubscriberEmailVerification:
@@ -682,3 +684,153 @@ class TestMonCompteEmailVerification:
 
         mock_portal.assert_called_once()
         assert response.headers["Location"] == fake_portal.url
+
+
+class TestSubscriptionCheckoutEmailVerification:
+    """Un nouvel abonnement (/checkout/abonnement/<plan>) exige desormais lui aussi
+    une preuve de possession de l'email (OTP) avant d'envoyer la personne payer sur
+    Stripe -- pour ne jamais initier une souscription (et les emails de facturation
+    qui suivent) au nom d'une adresse qui n'est pas la sienne. Aucun appel reseau
+    reel : send_verification_email et stripe.checkout.Session.create sont mockes."""
+
+    def _start_subscription_verification(self, client, email, plan="starter_10"):
+        import re
+
+        response = client.post(
+            "/checkout/abonnement/" + plan, data={"email": email}, follow_redirects=False
+        )
+        assert "/verifier-abonnement" in response.headers["Location"]
+        return re.search(r"token=([^&]+)", response.headers["Location"]).group(1)
+
+    def test_correct_code_then_reaches_stripe_and_sets_cookie(self, client):
+        import email_verification
+
+        email = "nouvel.abonne.otp@example.com"
+        token = self._start_subscription_verification(client, email, plan="starter_10")
+
+        with patch.object(email_verification, "send_verification_email") as mock_send:
+            client.get(f"/verifier-abonnement?token={token}")
+            code = mock_send.call_args[0][1]
+
+        fake_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-subotp")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_session) as mock_create:
+            response = client.post(
+                "/verifier-abonnement", data={"token": token, "code": code}, follow_redirects=False
+            )
+
+        mock_create.assert_called_once()
+        assert mock_create.call_args.kwargs["customer_email"] == email
+        assert response.status_code in (301, 302, 303)
+        assert response.headers["Location"] == fake_session.url
+        assert "verified_email" in response.headers.get("Set-Cookie", "")
+
+        # Meme navigateur, nouvelle souscription : plus besoin de code.
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_session) as mock_create_2:
+            second_response = client.post(
+                "/checkout/abonnement/illimite", data={"email": email}, follow_redirects=False
+            )
+        mock_create_2.assert_called_once()
+        assert "/verifier-abonnement" not in second_response.headers["Location"]
+
+    def test_wrong_code_rejected_before_stripe(self, client):
+        import email_verification
+
+        email = "code.faux.abonnement@example.com"
+        token = self._start_subscription_verification(client, email)
+
+        with patch.object(email_verification, "send_verification_email"):
+            client.get(f"/verifier-abonnement?token={token}")
+
+        with patch("billing.stripe.checkout.Session.create") as mock_create:
+            response = client.post("/verifier-abonnement", data={"token": token, "code": "000000"})
+            mock_create.assert_not_called()
+
+        assert response.status_code == 401
+        assert "Code incorrect" in response.get_data(as_text=True)
+
+    def test_expired_code_rejected_then_resend_works(self, app_module, client):
+        import email_verification
+        from datetime import datetime, timedelta
+        from models_billing import EmailVerification
+
+        email = "code.expire.abonnement@example.com"
+        token = self._start_subscription_verification(client, email)
+
+        with patch.object(email_verification, "send_verification_email") as mock_send:
+            client.get(f"/verifier-abonnement?token={token}")
+            code = mock_send.call_args[0][1]
+
+        with app_module.app.app_context():
+            verification = EmailVerification.query.filter_by(email=email).first()
+            verification.expires_at = datetime.utcnow() - timedelta(minutes=1)
+            verification.created_at = datetime.utcnow() - timedelta(minutes=5)
+            app_module.db.session.commit()
+
+        response = client.post("/verifier-abonnement", data={"token": token, "code": code})
+        assert "expiré" in response.get_data(as_text=True)
+
+        with patch.object(email_verification, "send_verification_email") as mock_send:
+            client.post("/verifier-abonnement", data={"token": token, "action": "renvoyer"})
+            new_code = mock_send.call_args[0][1]
+
+        fake_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-resend")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_session):
+            response = client.post(
+                "/verifier-abonnement", data={"token": token, "code": new_code}, follow_redirects=False
+            )
+        assert response.headers["Location"] == fake_session.url
+
+    def test_too_many_attempts_blocks_even_the_correct_code(self, client):
+        import email_verification
+
+        email = "trop.tentatives.abonnement@example.com"
+        token = self._start_subscription_verification(client, email)
+
+        with patch.object(email_verification, "send_verification_email") as mock_send:
+            client.get(f"/verifier-abonnement?token={token}")
+            code = mock_send.call_args[0][1]
+
+        for _ in range(5):
+            client.post("/verifier-abonnement", data={"token": token, "code": "000000"})
+
+        response = client.post("/verifier-abonnement", data={"token": token, "code": code})
+        assert "Trop de tentatives" in response.get_data(as_text=True)
+
+    def test_already_active_at_verification_time_blocks_second_subscription(self, app_module, client):
+        """TOCTOU : si l'email devient abonne actif pendant la saisie du code (deux
+        onglets, double soumission...), la seconde souscription Stripe ne doit
+        jamais etre creee -- meme controle qu'a l'entree du flux."""
+        import email_verification
+
+        email = "devient.abonne.pendant.otp@example.com"
+        token = self._start_subscription_verification(client, email)
+
+        with patch.object(email_verification, "send_verification_email") as mock_send:
+            client.get(f"/verifier-abonnement?token={token}")
+            code = mock_send.call_args[0][1]
+
+        _make_active_subscriber(app_module, email, plan="starter_10")
+
+        with patch("billing.stripe.checkout.Session.create") as mock_create:
+            response = client.post("/verifier-abonnement", data={"token": token, "code": code})
+            mock_create.assert_not_called()
+
+        assert response.status_code == 409
+
+    def test_invalid_or_missing_token_redirects_to_tarifs(self, client):
+        response = client.get("/verifier-abonnement?token=invalide", follow_redirects=False)
+        assert response.headers["Location"].endswith("/tarifs")
+
+        response = client.get("/verifier-abonnement", follow_redirects=False)
+        assert response.headers["Location"].endswith("/tarifs")
+
+    def test_non_subscriber_form_never_reaches_stripe_without_code(self, client):
+        """Regression du scenario signale : cliquer sur 'S'abonner' avec un simple
+        email ne doit plus atteindre Stripe sans passer par /verifier-abonnement."""
+        email = "direct.stripe.sans.otp@example.com"
+        with patch("billing.stripe.checkout.Session.create") as mock_create:
+            response = client.post(
+                "/checkout/abonnement/starter_10", data={"email": email}, follow_redirects=False
+            )
+            mock_create.assert_not_called()
+        assert "checkout.stripe.com" not in response.headers["Location"]

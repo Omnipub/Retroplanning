@@ -2,7 +2,7 @@
 # Routes Flask a enregistrer dans app.py (via app.register_blueprint).
 # Contient la logique de facturation Stripe (paiement a l'acte, abonnements, webhook).
 
-from flask import Blueprint, request, redirect, jsonify, render_template
+from flask import Blueprint, request, redirect, jsonify, render_template, url_for
 import os
 
 import stripe
@@ -19,6 +19,8 @@ from models_billing import Customer
 from email_verification import (
     cookie_confirms_email,
     create_and_send_code,
+    make_pending_subscription_token,
+    read_pending_subscription_token,
     set_verified_email_cookie,
     verify_code,
 )
@@ -26,6 +28,8 @@ from email_verification import (
 billing_bp = Blueprint("billing", __name__)
 
 SITE_URL = os.environ.get("SITE_URL", "https://www.retroplanning.eu")
+
+PLAN_LABELS = {"starter_10": "Starter 10", "illimite": "Illimité"}
 
 
 # ---------------------------------------------------------------------------
@@ -56,6 +60,16 @@ def checkout_unique():
     return redirect(checkout_session.url, code=303)
 
 
+def _start_subscription_checkout(email, plan):
+    checkout_session = create_subscription_checkout(
+        email=email,
+        plan=plan,
+        success_url=SITE_URL + "/paiement/succes",
+        cancel_url=SITE_URL + "/tarifs",
+    )
+    return redirect(checkout_session.url, code=303)
+
+
 @billing_bp.route("/checkout/abonnement/<plan>", methods=["POST"])
 def checkout_abonnement(plan):
     if plan not in ("starter_10", "illimite"):
@@ -77,13 +91,66 @@ def checkout_abonnement(plan):
             "abonnement_existant.html", email=email, plan_actuel=status["plan"]
         ), 409
 
-    checkout_session = create_subscription_checkout(
-        email=email,
-        plan=plan,
-        success_url=SITE_URL + "/paiement/succes",
-        cancel_url=SITE_URL + "/tarifs",
-    )
-    return redirect(checkout_session.url, code=303)
+    # Avant d'envoyer la personne payer sur Stripe : prouver qu'elle possede bien
+    # cet email (code a usage unique), sinon n'importe qui pourrait initier un
+    # abonnement -- et donc les emails de facturation Stripe qui suivent -- au nom
+    # d'une adresse qui n'est pas la sienne. Si ce navigateur a deja prouve
+    # posseder cet email il y a moins de 30 jours (cookie pose par /verifier,
+    # /verifier-abonnement ou /mon-compte), on ne redemande pas de code.
+    if cookie_confirms_email(email):
+        return _start_subscription_checkout(email, plan)
+
+    token = make_pending_subscription_token(email, plan)
+    return redirect(url_for("billing.verifier_abonnement", token=token), code=303)
+
+
+@billing_bp.route("/verifier-abonnement", methods=["GET", "POST"])
+def verifier_abonnement():
+    """Etape de verification par code (OTP) intercalee entre le choix d'un
+    abonnement (/checkout/abonnement/<plan>) et le paiement Stripe. Le jeton
+    signe transporte l'email et le plan choisis sans les exposer en clair."""
+    token = request.values.get("token", "")
+    pending = read_pending_subscription_token(token)
+    if not pending:
+        return redirect(url_for("billing.tarifs"))
+
+    email = pending["email"]
+    plan = pending["plan"]
+    plan_label = PLAN_LABELS.get(plan, plan)
+
+    if request.method == "GET" or request.form.get("action") == "renvoyer":
+        status = create_and_send_code(email)
+        return render_template(
+            "verifier_abonnement.html", token=token, email=email,
+            plan=plan, plan_label=plan_label, error=None, status=status,
+        )
+
+    ok, reason = verify_code(email, request.form.get("code", ""))
+    if not ok:
+        messages = {
+            "wrong_code": "Code incorrect.",
+            "expired": "Ce code a expiré, demandez-en un nouveau.",
+            "too_many_attempts": "Trop de tentatives avec ce code, demandez-en un nouveau.",
+            "no_pending_code": "Aucun code en attente, demandez-en un nouveau.",
+        }
+        return render_template(
+            "verifier_abonnement.html", token=token, email=email,
+            plan=plan, plan_label=plan_label,
+            error=messages.get(reason, "Erreur de vérification."), status=None,
+        ), 401
+
+    # Recheck a la volee : si un abonnement actif a ete active entre-temps pour cet
+    # email (deux onglets, code demande deux fois...), ne jamais creer une seconde
+    # souscription Stripe -- meme logique qu'a l'entree du flux.
+    status = get_access_status(email)
+    if status["allowed"]:
+        return render_template(
+            "abonnement_existant.html", email=email, plan_actuel=status["plan"]
+        ), 409
+
+    response = _start_subscription_checkout(email, plan)
+    set_verified_email_cookie(response, email)
+    return response
 
 
 @billing_bp.route("/paiement/succes")
