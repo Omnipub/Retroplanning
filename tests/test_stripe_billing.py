@@ -318,6 +318,73 @@ class TestSuccessPageInvoiceSourcing:
         assert "2.40" not in body and "2,40" not in body
 
 
+class TestOrderConfirmationEmail:
+    """L'email de confirmation (lien d'acces + instructions, pas seulement la
+    facture) doit partir une seule fois, a la generation initiale du PNG --
+    ni a chaque rafraichissement de /success, ni sans email connu."""
+
+    def test_one_time_payment_triggers_confirmation_email_once(self, client):
+        import re
+
+        email = "confirmation.acte@example.com"
+        fake_checkout_session = SimpleNamespace(url="https://checkout.stripe.com/test-session-confirm")
+        with patch("billing.stripe.checkout.Session.create", return_value=fake_checkout_session) as mock_create:
+            client.post("/checkout", data=_checkout_payload(email), follow_redirects=False)
+        called_success_url = mock_create.call_args.kwargs["success_url"]
+        token = re.search(r"token=([0-9a-f]+)", called_success_url).group(1)
+
+        fake_stripe_session = {
+            "invoice": "in_test_confirm",
+            "payment_status": "paid",
+            "metadata": {"token": token},
+        }
+        fake_invoice = {"hosted_invoice_url": "https://invoice.stripe.com/i/acct_test/in_test_confirm"}
+        with patch("billing.stripe.checkout.Session.retrieve", return_value=fake_stripe_session), \
+             patch("billing.stripe.Invoice.retrieve", return_value=fake_invoice), \
+             patch("app.send_order_confirmation_email") as mock_confirm:
+            client.get(f"/success?token={token}&session_id=cs_test_confirm")
+
+        mock_confirm.assert_called_once()
+        call_kwargs = mock_confirm.call_args
+        assert call_kwargs.args[0] == email or call_kwargs.kwargs.get("email") == email
+        assert "/download/png/" in call_kwargs.kwargs["download_url"]
+        assert call_kwargs.kwargs["invoice_url"] == "https://invoice.stripe.com/i/acct_test/in_test_confirm"
+
+        # Rafraichir /success (retour navigateur, lien enregistre...) ne doit
+        # PAS renvoyer un deuxieme email de confirmation.
+        with patch("billing.stripe.checkout.Session.retrieve", return_value=fake_stripe_session), \
+             patch("billing.stripe.Invoice.retrieve", return_value=fake_invoice), \
+             patch("app.send_order_confirmation_email") as mock_confirm_again:
+            client.get(f"/success?token={token}&session_id=cs_test_confirm")
+        mock_confirm_again.assert_not_called()
+
+    def test_subscriber_bypass_also_triggers_confirmation_email(self, app_module, client):
+        import re
+
+        import email_verification
+
+        email = "confirmation.abonne@example.com"
+        _make_active_subscriber(app_module, email, plan="starter_10")
+
+        response = client.post("/checkout", data=_checkout_payload(email), follow_redirects=False)
+        token = re.search(r"token=([0-9a-f]+)", response.headers["Location"]).group(1)
+
+        with patch.object(email_verification, "send_verification_email") as mock_send:
+            client.get(f"/verifier?token={token}")
+            code = mock_send.call_args[0][1]
+
+        verify_response = client.post(
+            "/verifier", data={"token": token, "code": code}, follow_redirects=False
+        )
+
+        with patch("app.send_order_confirmation_email") as mock_confirm:
+            client.get(verify_response.headers["Location"])
+
+        mock_confirm.assert_called_once()
+        call_kwargs = mock_confirm.call_args
+        assert call_kwargs.kwargs["invoice_url"] is None  # aucun paiement Stripe pour cette generation
+
+
 class TestPaiementSuccesAccountLink:
     """Scenario 6 : la page de confirmation d'abonnement (/paiement/succes) doit
     proposer un lien vers /mon-compte (portail Stripe, resiliation en 1 clic promise

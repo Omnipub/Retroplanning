@@ -71,6 +71,9 @@ from email_verification import (  # noqa: E402
     cookie_confirms_email,
     set_verified_email_cookie,
 )
+# Email de confirmation apres generation reussie (lien d'acces + instructions,
+# pas seulement la facture) : voir notifications.py.
+from notifications import send_order_confirmation_email  # noqa: E402
 
 ORDERS_FILE = "/tmp/orders.json"
 
@@ -460,6 +463,10 @@ def success():
         order["access_verified"] = True
         invoice_url = get_invoice_url_for_session(session_obj)
 
+    # "paid" est deja vrai si la personne revisite /success (retour navigateur,
+    # rafraichissement, lien enregistre) : on s'en sert pour n'envoyer l'email
+    # de confirmation qu'une seule fois, a la generation initiale.
+    already_confirmed = order.get("paid", False)
     order["paid"] = True
     steps = []
 
@@ -487,6 +494,15 @@ def success():
     # --- Stripe billing : decompte le quota mensuel si la generation vient d'un abonnement ---
     if is_subscriber and order.get("email"):
         record_usage(order["email"])
+
+    # Email de confirmation avec lien d'acces + instructions (pas seulement la
+    # facture) -- envoye une seule fois, a la generation initiale du PNG.
+    if not already_confirmed:
+        send_order_confirmation_email(
+            order.get("email"),
+            download_url=SITE_URL + url_for("download_png", token=token),
+            invoice_url=invoice_url,
+        )
 
     return render_template(
         "success.html", token=token, order=order, contact_email=CONTACT_EMAIL,

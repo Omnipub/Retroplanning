@@ -19,18 +19,17 @@ import os
 import secrets
 from datetime import datetime, timedelta
 
-import requests
 from flask import current_app, request
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from app import db
+from email_client import send_email
 from models_billing import EmailVerification
 
 CODE_TTL_MINUTES = 15
 MAX_ATTEMPTS = 5
 RESEND_COOLDOWN_SECONDS = 60
 
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 EMAIL_FROM = os.environ.get("VERIFICATION_EMAIL_FROM", "Rétroplanning.eu <verification@retroplanning.eu>")
 
 VERIFIED_EMAIL_COOKIE = "verified_email"
@@ -119,29 +118,13 @@ def verify_code(email, submitted_code):
 
 
 def send_verification_email(email, code):
-    if not RESEND_API_KEY:
-        # Pas de cle configuree : on log le code au lieu d'echouer silencieusement,
-        # utile en local/tests et le temps de creer le compte Resend.
-        print(f"[email_verification] RESEND_API_KEY absente -- code pour {email} : {code}")
-        return
-
-    response = requests.post(
-        "https://api.resend.com/emails",
-        headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
-        json={
-            "from": EMAIL_FROM,
-            "to": [email],
-            "subject": f"Votre code de vérification : {code}",
-            "html": (
-                "<p>Voici votre code de vérification Rétroplanning.eu :</p>"
-                f"<p style=\"font-size:28px;font-weight:bold;letter-spacing:4px;\">{code}</p>"
-                f"<p>Ce code expire dans {CODE_TTL_MINUTES} minutes. "
-                "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>"
-            ),
-        },
-        timeout=10,
+    html = (
+        "<p>Voici votre code de vérification Rétroplanning.eu :</p>"
+        f"<p style=\"font-size:28px;font-weight:bold;letter-spacing:4px;\">{code}</p>"
+        f"<p>Ce code expire dans {CODE_TTL_MINUTES} minutes. "
+        "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>"
     )
-    response.raise_for_status()
+    send_email(email, f"Votre code de vérification : {code}", html, from_addr=EMAIL_FROM)
 
 
 # ---------------------------------------------------------------------------
