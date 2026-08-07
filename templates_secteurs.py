@@ -11,6 +11,7 @@ TEMPLATES_SECTEURS = {
         "label": "Mariage",
         "icone": "💍",
         "duree_recommandee_jours": 365,
+        "description": "Sécurisez la réservation du lieu, le traiteur, les tenues et le plan de table jusqu'au jour J.",
         "etapes": [
             "Lancement du projet",
             "Réservation du lieu",
@@ -26,6 +27,7 @@ TEMPLATES_SECTEURS = {
         "label": "Salon professionnel / stand événementiel",
         "icone": "🎪",
         "duree_recommandee_jours": 90,
+        "description": "Cadrez la réservation du stand, les objets publicitaires et la logistique transport jusqu'à l'ouverture.",
         "etapes": [
             "Lancement du projet",
             "Réservation du stand",
@@ -40,6 +42,7 @@ TEMPLATES_SECTEURS = {
         "label": "Lancement de produit",
         "icone": "🚀",
         "duree_recommandee_jours": 60,
+        "description": "Coordonnez supports de communication, presse, formation des équipes de vente et stock avant la sortie.",
         "etapes": [
             "Lancement du projet",
             "Production des supports",
@@ -54,6 +57,7 @@ TEMPLATES_SECTEURS = {
         "label": "Déménagement",
         "icone": "📦",
         "duree_recommandee_jours": 60,
+        "description": "N'oubliez ni les devis déménageurs, ni les résiliations, ni les cartons, ni les démarches administratives.",
         "etapes": [
             "Lancement du projet",
             "Devis déménageurs",
@@ -67,6 +71,7 @@ TEMPLATES_SECTEURS = {
         "label": "Travaux / rénovation",
         "icone": "🔨",
         "duree_recommandee_jours": 90,
+        "description": "Suivez les devis artisans, les permis, le choix des matériaux et le planning des intervenants.",
         "etapes": [
             "Lancement du projet",
             "Devis artisans",
@@ -80,6 +85,7 @@ TEMPLATES_SECTEURS = {
         "label": "Recrutement / onboarding",
         "icone": "🧑‍💼",
         "duree_recommandee_jours": 30,
+        "description": "De la diffusion de l'offre à l'onboarding : entretiens, contrat et préparation du poste de travail.",
         "etapes": [
             "Lancement du projet",
             "Diffusion de l'offre",
@@ -93,6 +99,7 @@ TEMPLATES_SECTEURS = {
         "label": "Association / événement caritatif",
         "icone": "🤝",
         "duree_recommandee_jours": 90,
+        "description": "Coordonnez la recherche de sponsors, la réservation du lieu, la communication et les bénévoles.",
         "etapes": [
             "Lancement du projet",
             "Recherche de sponsors",
@@ -106,6 +113,7 @@ TEMPLATES_SECTEURS = {
         "label": "Soutenance de thèse / mémoire",
         "icone": "🎓",
         "duree_recommandee_jours": 90,
+        "description": "Cadrez le plan, la rédaction, la relecture et la mise en forme avant la soutenance.",
         "etapes": [
             "Lancement du projet",
             "Plan",

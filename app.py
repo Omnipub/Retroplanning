@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, send_file, redirect, session, url_for, abort
+from markupsafe import Markup
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -49,7 +50,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # --- Modeles sectoriels de retroplanning : voir retroplanning-templates/INTEGRATION.md ---
-from templates_secteurs import get_template  # noqa: E402
+from templates_secteurs import get_template, list_templates  # noqa: E402
 from routes_templates import templates_bp  # noqa: E402
 app.register_blueprint(templates_bp)
 # --- Stripe billing (facturation) : voir retroplanning-stripe/INTEGRATION.md ---
@@ -159,6 +160,14 @@ class Article(db.Model):
         return max(1, round(len((self.contenu or "").split()) / 220))
 
 
+def _obfuscate_email(email):
+    # Encode chaque caractere en entite HTML numerique : illisible pour un
+    # grattage regex naif sur le HTML brut, mais decode normalement par les
+    # navigateurs, les crawlers et les LLM (contrairement a une obfuscation
+    # 100% JS, qui rend l'adresse invisible sans execution de script).
+    return Markup("".join(f"&#{ord(c)};" for c in email))
+
+
 @app.context_processor
 def inject_globals():
     contact_user, _, contact_domain = CONTACT_EMAIL.partition("@")
@@ -167,6 +176,7 @@ def inject_globals():
         "contact_email": CONTACT_EMAIL,
         "contact_user": contact_user,
         "contact_domain": contact_domain,
+        "contact_email_obfuscated": _obfuscate_email(CONTACT_EMAIL),
         "site_url": SITE_URL,
         "entreprise": ENTREPRISE
     }
@@ -324,7 +334,9 @@ def generate_png(nom_client, nom_evenement, steps, phone, email, web, footer_soc
 
 @app.route("/")
 def landing():
-    return render_template("landing.html", faqs=HOME_FAQS, contact_email=CONTACT_EMAIL)
+    return render_template(
+        "landing.html", faqs=HOME_FAQS, contact_email=CONTACT_EMAIL, secteurs=list_templates()
+    )
 
 
 @app.route("/a-propos")
