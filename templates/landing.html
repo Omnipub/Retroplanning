@@ -42,8 +42,11 @@
     <meta name="twitter:description" content="Générez un rétroplanning événementiel personnalisé en quelques minutes.">  
     <meta name="twitter:image" content="https://objets-golf.com/Images/Blog_retroplanning/retroplanning-evenementiel-en-equipe-professionnelle.jpg">
 
-    <link rel="icon" href="/static/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"><link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png"><link rel="stylesheet" href="/static/css/tailwind.css"><script defer src="/static/js/contact-links.js"></script>
+    <link rel="icon" href="/static/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png"><link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png"><link rel="stylesheet" href="/static/css/tailwind.css">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
     <!-- Données structurées de l'outil -->  
@@ -149,8 +152,8 @@
                     Blog &amp; Guides  
                 </a>
 
-                <a href="#" class="js-contact-link inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition"
-                   data-user="{{ contact_user }}" data-domain="{{ contact_domain }}" data-subject="Demande%20d%27information%20R%C3%A9troplanning">
+                <a href="mailto:{{ contact_email_obfuscated }}?subject=Demande%20d%27information%20R%C3%A9troplanning"
+                   class="inline-block bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 px-10 rounded-full border border-slate-300 shadow-sm transition">
                     Nous contacter
                 </a>
 
@@ -373,7 +376,7 @@
                 À propos
             </a>
 
-            <a href="#" class="js-contact-link text-teal-400 hover:underline" data-user="{{ contact_user }}" data-domain="{{ contact_domain }}">
+            <a href="mailto:{{ contact_email_obfuscated }}" class="text-teal-400 hover:underline">
                 Contact
             </a>
 
@@ -385,7 +388,7 @@
 
         <p class="text-sm">
             Contact :
-            <a href="#" class="js-contact-link text-teal-400 hover:underline" data-user="{{ contact_user }}" data-domain="{{ contact_domain }}" data-show-address="true">nous écrire</a>
+            <a href="mailto:{{ contact_email_obfuscated }}" class="text-teal-400 hover:underline">{{ contact_email_obfuscated }}</a>
         </p>
 
     </footer>
