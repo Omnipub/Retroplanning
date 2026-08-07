@@ -50,7 +50,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # --- Modeles sectoriels de retroplanning : voir retroplanning-templates/INTEGRATION.md ---
-from templates_secteurs import get_template  # noqa: E402
+from templates_secteurs import get_template, list_templates  # noqa: E402
 from routes_templates import templates_bp  # noqa: E402
 app.register_blueprint(templates_bp)
 # --- Stripe billing (facturation) : voir retroplanning-stripe/INTEGRATION.md ---
@@ -334,7 +334,9 @@ def generate_png(nom_client, nom_evenement, steps, phone, email, web, footer_soc
 
 @app.route("/")
 def landing():
-    return render_template("landing.html", faqs=HOME_FAQS, contact_email=CONTACT_EMAIL)
+    return render_template(
+        "landing.html", faqs=HOME_FAQS, contact_email=CONTACT_EMAIL, secteurs=list_templates()
+    )
 
 
 @app.route("/a-propos")
