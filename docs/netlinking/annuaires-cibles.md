@@ -26,17 +26,37 @@ de référence et la découvrabilité), d'autres dofollow.
 - [ ] Petite-entreprise.net — annuaire outils pour TPE/indépendants
 - [ ] Chefdentreprise.com — répertoire solutions pro
 
-## 3. Sites et blogs métier (événementiel, communication, gestion de projet)
+## 3. Fédérations, associations et annuaires métier (événementiel, mariage, gestion de projet)
 
-Angle : proposer l'article invité (`article-invite-methode-retroplanning.md`) plutôt qu'une
-simple soumission d'annuaire — ce sont des liens contextuels à plus forte valeur SEO.
+Cibles identifiées avec nom et lien réels — à privilégier sur les recherches génériques
+ci-dessous, plus rapides à statuer.
 
-- [ ] Blogs d'agences de communication et d'organisation d'événements (rechercher
-      "agence événementiel + blog" et cibler celles qui publient déjà du contenu méthode)
-- [ ] Médias métier événementiel (ex. Evenement.fr, EventMagazine et équivalents)
-- [ ] Blogs gestion de projet / productivité BtoB francophones
-- [ ] Sites spécialisés mariage côté organisation (angle "planning mariage", pas annuaire
-      de prestataires — éviter les sites orientés uniquement vitrine de prestataires)
+- [x] **Repère Méditerranée** (repere-med.fr) — association événementiel arc méditerranéen,
+      Montpellier. Omnipub déjà adhérent par le passé → renouvellement en cours, voir
+      `cibles/repere-mediterranee.md`.
+- [ ] **UNIMEV** (unimev.fr) — fédération nationale des métiers de l'événement (salons,
+      congrès, prestataires), 300+ membres. Vérifier si une catégorie "prestataire
+      dédié"/tech couvre un outil SaaS comme Rétroplanning.eu (pas uniquement organisateurs
+      de salons physiques).
+- [ ] **ASSOCEM** (assocem.org, annuaire sur annuaire.assocem.org) — association des
+      consultants en mariage, 180 membres. **Précédent favorable** : weddingplan.fr (un
+      logiciel du secteur mariage) y est déjà listé comme *"partenaire ASSOCEM"* — donc une
+      catégorie existe pour les outils/logiciels, pas seulement les wedding planners
+      eux-mêmes. Angle naturel vu le modèle "mariage" du générateur.
+- [ ] **LÉVÉNEMENT** (levenement.org) — fédération des agences de communication
+      événementielle, ~100 agences membres. Fit plus indirect (fédère des agences, pas des
+      outils) — à sonder en mentionnant que l'outil sert directement leurs adhérents.
+- [ ] **ANAé** (association des agences qui créent des événements, 60 membres) — même
+      remarque que LÉVÉNEMENT.
+- [ ] **Annuaire bepub** (fr.bepub.com/annuaire-evenementiel) — annuaire généraliste des
+      professionnels de l'événementiel, soumission probablement plus simple/ouverte qu'une
+      adhésion associative.
+- [ ] Blogs gestion de projet / productivité BtoB francophones (recherche à faire au cas
+      par cas, pas de nom identifié pour l'instant)
+
+Angle pour les fédérations d'agences (LÉVÉNEMENT, ANAé) : proposer l'article invité
+(`article-invite-methode-retroplanning.md`) plutôt qu'une adhésion, si l'association publie
+du contenu pour ses membres — lien contextuel à plus forte valeur SEO qu'une simple fiche.
 
 ## 4. Local / régional (Occitanie — siège d'Omnipub à Castelnau-le-Lez)
 
