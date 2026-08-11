@@ -24,30 +24,33 @@ située dans l'arc méditerranéen — Omnipub correspond).
 ⚠️ Vérifier s'il y a un **tarif d'adhésion** avant de s'engager — non trouvé dans les
 recherches publiques, à demander directement dans l'email ou sur la page adhésion.
 
-## Email prêt à envoyer
+## Mise à jour : déjà adhérent par le passé
 
-**Objet :** Demande d'adhésion — Rétroplanning.eu / Omnipub (Castelnau-le-Lez)
+Omnipub a déjà été membre de REPÈRE, mais l'adhésion n'a pas été renouvelée cette année
+(cotisation non réglée) — la fiche a donc disparu de l'annuaire Membres. C'est un
+**renouvellement**, pas une nouvelle demande : le contact et la procédure sont déjà connus.
+
+## Email prêt à envoyer (renouvellement)
+
+**Objet :** Renouvellement d'adhésion — Omnipub / Rétroplanning.eu
 
 ```
 Bonjour,
 
-Je vous contacte au nom d'Omnipub, éditeur de Rétroplanning.eu, un générateur en ligne
-de rétroplannings événementiels et de production, basé à Castelnau-le-Lez.
+Omnipub a été adhérent de REPÈRE, mais notre cotisation n'a pas été renouvelée cette
+année — je souhaiterais régulariser notre adhésion.
 
-Notre outil s'adresse directement aux professionnels de votre filière : agences de
-communication, organisateurs d'événements et chefs de projet qui doivent construire et
-partager rapidement une frise chronologique claire pour un mariage, un salon
-professionnel, un lancement produit ou tout autre projet à date fixe.
+Pourriez-vous me confirmer les modalités de renouvellement (montant, procédure) ?
 
-Basés dans l'Hérault et actifs sur l'arc méditerranéen, nous souhaiterions rejoindre le
-collectif REPÈRE pour échanger avec les acteurs du secteur et, si cela a du sens pour
-vous, faire connaître notre outil auprès de vos adhérents.
+Par la même occasion, notre activité a évolué : nous éditons désormais principalement
+Rétroplanning.eu, un générateur en ligne de rétroplannings événementiels et de
+production, à destination des agences de communication, organisateurs d'événements et
+chefs de projet. Serait-il possible que notre fiche sur l'annuaire Membres pointe vers
+https://www.retroplanning.eu plutôt que (ou en plus de) notre site Omnipub, pour mieux
+refléter l'activité concernée par votre filière ?
 
-Pourriez-vous nous indiquer la marche à suivre pour adhérer, ainsi que les modalités
-(conditions, éventuel tarif) ?
-
-Bien cordialement,
-[Signature — nom, Omnipub, retroplanning.eu]
+Merci d'avance,
+[Signature — nom, Omnipub]
 ```
 
 ## Suite à donner
