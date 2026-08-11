@@ -159,11 +159,16 @@
 
             </div>
 
-            <p class="mt-4 text-sm text-slate-500">  
-                Dès 2€ à l'acte • Abonnements dès 9,90€ HT/mois • <a href="/tarifs" class="underline hover:text-slate-700">Voir tous les tarifs</a>  
+            <p class="mt-4 text-sm text-slate-500">
+                Dès 2€ à l'acte • Abonnements dès 9,90€ HT/mois • <a href="/tarifs" class="underline hover:text-slate-700">Voir tous les tarifs</a>
             </p>
 
-        </div>  
+            <a href="tel:{{ contact_phone_tel }}"
+               class="mt-5 inline-flex items-center gap-2 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-sm px-5 py-2.5 rounded-full border border-teal-200 transition">
+                📞 {{ contact_phone_display }}
+            </a>
+
+        </div>
     </section>
 
     <!-- OFFRES -->
@@ -415,6 +420,8 @@
         <p class="text-sm">
             Contact :
             <a href="mailto:{{ contact_email_obfuscated }}" class="text-teal-400 hover:underline">{{ contact_email_obfuscated }}</a>
+            ·
+            <a href="tel:{{ contact_phone_tel }}" class="text-teal-400 hover:underline">{{ contact_phone_display }}</a>
         </p>
 
     </footer>

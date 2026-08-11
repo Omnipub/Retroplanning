@@ -20,6 +20,13 @@ PRIX_HT = 2.00
 PRIX_TTC = round(PRIX_HT * 1.20, 2)
 SITE_URL = "https://www.retroplanning.eu"
 
+# Numero commercial affiche aux visiteurs (hero + footer de la landing) : standard
+# d'accueil dedie au site, distinct du numero legal d'Omnipub ci-dessous. A ne PAS
+# utiliser dans les mentions legales / le schema LocalBusiness, qui doivent rester
+# sur les coordonnees de l'entite juridique (voir ENTREPRISE).
+CONTACT_PHONE_DISPLAY = "01 59 48 00 94"
+CONTACT_PHONE_TEL = "+33159480094"
+
 # Coordonnees publiques de l'editeur (page /a-propos, footer, balisage LocalBusiness).
 ENTREPRISE = {
     "nom": "Omnipub",
@@ -177,6 +184,8 @@ def inject_globals():
         "contact_user": contact_user,
         "contact_domain": contact_domain,
         "contact_email_obfuscated": _obfuscate_email(CONTACT_EMAIL),
+        "contact_phone_display": CONTACT_PHONE_DISPLAY,
+        "contact_phone_tel": CONTACT_PHONE_TEL,
         "site_url": SITE_URL,
         "entreprise": ENTREPRISE
     }
