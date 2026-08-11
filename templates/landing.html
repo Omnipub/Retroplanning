@@ -426,5 +426,20 @@
 
     </footer>
 
-</body>  
-</html>  
+    <!-- Chatbot Limova : injecté après l'événement 'load' (+ délai) plutôt qu'au
+         chargement initial, pour ne pas retarder le rendu de la page ni peser sur
+         les métriques PageSpeed/Core Web Vitals utilisées pour le classement. -->
+    <script>
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                var s = document.createElement('script');
+                s.src = 'https://limova-web-sltj.onrender.com/scripts/chatbot-loader.js';
+                s.setAttribute('data-connection-id', 'a2e77de9-b532-4092-a2dd-283b3dc46a75');
+                document.body.appendChild(s);
+            }, 3000);
+        });
+    </script>
+
+</body>
+</html>
+
