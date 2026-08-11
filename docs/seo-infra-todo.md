@@ -4,30 +4,26 @@ Ce fichier liste les correctifs identifiés lors de l'audit SEO/GEO/Perf (Limova
 août 2026) qui ne se règlent pas dans ce dépôt — ce sont des réglages Cloudflare / DNS
 OVH. À traiter par la personne ayant accès aux dashboards.
 
-## 1. Chaîne de redirections sur le domaine apex
+## 1. Chaîne de redirections sur le domaine apex — RÉSOLU (déjà correct)
 
-**Constat :** Google PageSpeed Insights (Mobile) chiffre à 1.11s la perte due à des
-"redirections multiples de pages". Le robots.txt de l'audit a été récupéré sur
-`http://retroplanning.eu/robots.txt` alors que le canonical du site est
-`https://www.retroplanning.eu/`, ce qui indique une chaîne à 2 sauts :
+**Constat initial :** Google PageSpeed Insights (Mobile) chiffrait à 1.11s la perte due à
+des "redirections multiples de pages". Hypothèse de départ : une chaîne à 2 sauts
+(`http://retroplanning.eu → https://retroplanning.eu → https://www.retroplanning.eu`) à
+corriger via un compte Cloudflare.
 
-```
-http://retroplanning.eu → https://retroplanning.eu → https://www.retroplanning.eu
-```
+**Vérification (11/08/2026) :** cette hypothèse était fausse. Le domaine n'est géré par
+aucun compte Cloudflare accessible (le compte `SI@omnipub.net` n'a aucun domaine
+enregistré) — la détection "Cloudflare" de l'audit vient de l'infrastructure interne de
+**Render**, pas d'une configuration côté client.
 
-`app.py` ne contient aucune logique de redirection http→https ou apex→www (vérifié),
-donc les deux sauts sont gérés par Cloudflare/le DNS, pas par Flask.
+Dans le dashboard Render (**Settings → Custom Domains** du service `retroplanning`) :
+- `retroplanning.eu` redirige déjà vers `https://www.retroplanning.eu` en **un seul saut**
+  (badge *"redirects to www.retroplanning.eu"*).
+- Les deux domaines sont **Verified** + **Certificate Issued**.
 
-**Correctif à appliquer dans le dashboard Cloudflare :**
-1. Activer **"Always Use HTTPS"** (SSL/TLS → Edge Certificates) pour que le saut
-   http→https soit géré par Cloudflare en périphérie (rapide) et non par une réponse
-   de l'origine.
-2. Créer une **Redirect Rule** (Rules → Redirect Rules) qui envoie directement
-   `retroplanning.eu/*` vers `https://www.retroplanning.eu/$1` en **un seul saut** —
-   plutôt que de laisser une redirection http→https-apex suivie d'une seconde
-   apex→www.
-3. Vérifier après coup avec `curl -IL http://retroplanning.eu/` qu'il n'y a plus
-   qu'un seul `301`/`308` avant le `200`.
+C'est donc déjà configuré correctement — rien à changer. Les 1.11s mesurés par PageSpeed
+sont probablement le coût incompressible d'un aller-retour HTTP + négociation TLS pour ce
+seul saut, pas une chaîne à raccourcir davantage.
 
 ## 2. Enregistrement DMARC absent
 
