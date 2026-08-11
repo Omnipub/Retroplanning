@@ -45,7 +45,7 @@ ENTREPRISE = {
 # laisser a None tant que le profil n'existe pas encore.
 SOCIAL_LINKS = {
     "linkedin": "https://www.linkedin.com/company/137853902/",
-    "instagram": None,
+    "instagram": "https://www.instagram.com/retroplanning/",
     "facebook": None,
     "x": None,
     "youtube": None,
