@@ -43,6 +43,7 @@ gtag('config', '{{ ga_id }}');
         "addressRegion": {{ entreprise.region|tojson }},
         "addressCountry": {{ entreprise.pays|tojson }}
       }
+      {% if social_links_sameas %},"sameAs": {{ social_links_sameas|tojson }}{% endif %}
     }
     </script>
 </head>

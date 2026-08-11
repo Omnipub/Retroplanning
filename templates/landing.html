@@ -90,6 +90,7 @@
         "addressRegion": {{ entreprise.region|tojson }},
         "addressCountry": {{ entreprise.pays|tojson }}
       }
+      {% if social_links_sameas %},"sameAs": {{ social_links_sameas|tojson }}{% endif %}
     }
     </script>
 
@@ -421,6 +422,26 @@
             </a>
 
         </div>
+
+        {% if social_links_sameas %}
+        <div class="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+            {% if social_links.linkedin %}
+            <a href="{{ social_links.linkedin }}" target="_blank" rel="noopener" class="text-slate-500 hover:text-teal-400 hover:underline">LinkedIn</a>
+            {% endif %}
+            {% if social_links.instagram %}
+            <a href="{{ social_links.instagram }}" target="_blank" rel="noopener" class="text-slate-500 hover:text-teal-400 hover:underline">Instagram</a>
+            {% endif %}
+            {% if social_links.facebook %}
+            <a href="{{ social_links.facebook }}" target="_blank" rel="noopener" class="text-slate-500 hover:text-teal-400 hover:underline">Facebook</a>
+            {% endif %}
+            {% if social_links.x %}
+            <a href="{{ social_links.x }}" target="_blank" rel="noopener" class="text-slate-500 hover:text-teal-400 hover:underline">X</a>
+            {% endif %}
+            {% if social_links.youtube %}
+            <a href="{{ social_links.youtube }}" target="_blank" rel="noopener" class="text-slate-500 hover:text-teal-400 hover:underline">YouTube</a>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <p class="mb-2">
             Un service édité par <strong>Omnipub</strong> — {{ entreprise.cp }} {{ entreprise.ville }}

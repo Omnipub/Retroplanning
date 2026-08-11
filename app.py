@@ -39,6 +39,18 @@ ENTREPRISE = {
     "telephone_affichage": "04 99 13 63 33",
     "siret": "432 764 785 00023",
 }
+
+# Profils reseaux sociaux officiels de la marque (footer + schema Organization/
+# LocalBusiness "sameAs"). Renseigner une URL ici suffit a la propager partout ;
+# laisser a None tant que le profil n'existe pas encore.
+SOCIAL_LINKS = {
+    "linkedin": "https://www.linkedin.com/company/137853902/",
+    "instagram": None,
+    "facebook": None,
+    "x": None,
+    "youtube": None,
+}
+
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
     raise RuntimeError("La variable d'environnement ADMIN_PASSWORD doit etre definie")
@@ -187,7 +199,9 @@ def inject_globals():
         "contact_phone_display": CONTACT_PHONE_DISPLAY,
         "contact_phone_tel": CONTACT_PHONE_TEL,
         "site_url": SITE_URL,
-        "entreprise": ENTREPRISE
+        "entreprise": ENTREPRISE,
+        "social_links": SOCIAL_LINKS,
+        "social_links_sameas": [url for url in SOCIAL_LINKS.values() if url],
     }
 
 
